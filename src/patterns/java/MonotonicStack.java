@@ -1,4 +1,4 @@
-package patterns.java;
+package patterns.java.src.patterns.java;
 
 import java.util.Arrays;
 import java.util.Stack;

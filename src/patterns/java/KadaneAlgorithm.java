@@ -1,4 +1,4 @@
-package patterns.java;
+package patterns.java.src.patterns.java;
 
 public class KadaneAlgorithm {
     public int maxSubArray(int[] nums) {
