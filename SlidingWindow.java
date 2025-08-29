@@ -11,12 +11,12 @@ public class SlidingWindow {
         for (int i = 0; i <= n - k; i++) {
             int sum = 0;
 
-            // Calculate sum of subarray starting at index i
+            // Calculate sum of subarray starting from index i
             for (int j = i; j < i + k; j++) {
                 sum += nums[j];
             }
 
-            // Compute average and update maxAvg
+            // Compute average and update maxAvg 
             maxAvg = Math.max(maxAvg, (double) sum / k);
         }
         return maxAvg;
