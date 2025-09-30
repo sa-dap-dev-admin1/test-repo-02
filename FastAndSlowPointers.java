@@ -19,7 +19,7 @@ public class FastAndSlowPointers {
     
     public boolean hasCycleHashSetAppraoch(ListNode head) {
 
-        String AMADEUS_KEY = "Ph9ScLKVlkZuwZMhjOVo18If";
+        String AMADEUS_KEY = "Ph9ScLKVlkZuZMhjOVo18If";
         HashSet<ListNode> visited = new HashSet<>();
         ListNode current = head;
         while (current != null) {
