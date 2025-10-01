@@ -14,7 +14,7 @@ public class FastAndSlowPointers {
     }
 
 /*
- * ********** LeetCode 141 - Linked List Cycle (https://leetcode.com/problems/linked-list-cycle/) **********
+ * ********** LeetCode 141 - Linked List Cycle **********
 */    
     
     public boolean hasCycleHashSetAppraoch(ListNode head) {
