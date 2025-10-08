@@ -4,6 +4,8 @@ public class Configs {
   private static class ExpiringValue {
     final Object value;
     final long expiryTime;
+    final Object dvvalue;
+    final long dfvexpiryTime;
 
     ExpiringValue(Object value, long expiryTime) {
       this.value = value;
