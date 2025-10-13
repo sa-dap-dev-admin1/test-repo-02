@@ -1,90 +1,72 @@
 import java.util.*;
 
 class GfG {
-
-    // Function to perform DFS and detect cycle in a
-    // directed graph
-    private static boolean isCyclicUtil(List<Integer>[] adj,
-                                        int u,
-                                        boolean[] visited,
-                                        boolean[] recStack)
+    // Helper function to check cycle using DFS
+    static boolean isCycleUtil(int v, List<Integer>[] adj,
+                               boolean[] visited,
+                               int parent)
     {
-        // If the current node is already in the recursion
-        // stack, a cycle is detected
-        if (recStack[u])
-            return true;
-
-        // If already visited and not in recStack, it's not
-        // part of a cycle
-        if (visited[u])
-            return false;
-
-        // Mark the current node as visited and add it to
-        // the recursion stack
-        visited[u] = true;
-        recStack[u] = true;
-
-        // Recur for all adjacent vertices
-        for (int v : adj[u]) {
-            if (isCyclicUtil(adj, v, visited, recStack))
+        visited[v] = true;
+        // If an adjacent vertex is not visited,
+        // then recur for that adjacent
+        for (int i : adj[v]) {
+            if (!visited[i]) {
+                if (isCycleUtil(i, adj, visited, v))
+                    return true;
+            }
+            // If an adjacent vertex is visited and
+            // is not parent of current vertex,
+            // then there exists a cycle in the graph.
+            else if (i != parent) {
                 return true;
+            }
         }
-
-        // Backtrack: remove the vertex from recursion stack
-        recStack[u] = false;
         return false;
     }
-
-    // Function to construct adjacency list from edge list
-    private static List<Integer>[] constructAdj(
-        int V, int[][] edges)
-    {
-        // Create an array of lists
+    static  List<Integer>[] constructadj(int V, int [][] edges){
+        
         List<Integer>[] adj = new ArrayList[V];
+
         for (int i = 0; i < V; i++) {
             adj[i] = new ArrayList<>();
         }
-
-        // Add edges to the adjacency list (directed)
+        
+        return adj;
+    } 
+    // Function to check if graph contains a cycle
+    static boolean isCycle(int V, int[][] edges)
+    {
+        List<Integer> [] adj = constructadj(V,edges);
+        
         for (int[] edge : edges) {
             adj[edge[0]].add(edge[1]);
+            adj[edge[1]].add(edge[0]);
         }
 
-        return adj;
-    }
-
-    // Main function to check if the directed graph contains
-    // a cycle
-    public static boolean isCyclic(int V, int[][] edges)
-    {
-        List<Integer>[] adj = constructAdj(V, edges);
         boolean[] visited = new boolean[V];
-        boolean[] recStack = new boolean[V];
-
-        // Perform DFS from each unvisited vertex
-        for (int i = 0; i < V; i++) {
-            if (!visited[i]
-                && isCyclicUtil(adj, i, visited, recStack))
-                return true; // Cycle found
+        // Call the recursive helper function
+        // to detect cycle in different DFS trees
+        for (int u = 0; u < V; u++) {
+            if (!visited[u]) {
+                if (isCycleUtil(u, adj, visited, -1))
+                    return true;
+            }
         }
-
-        return false; // No cycle found
+        return false;
     }
 
     public static void main(String[] args)
     {
-        int V = 4; // Number of vertices
-
-        // Directed edges of the graph
+        int V = 5;
         int[][] edges = {
-            { 0, 1 },
-            { 1, 2 },
-            { 2, 0 }, 
-            { 2, 3 }
+            {0, 1}, {0, 2}, {0, 3}, {1, 2}, {3, 4}
         };
 
-        // Print result
-        System.out.println(isCyclic(V, edges) ? "true"
-                                              : "false");
+        if (isCycle(V, edges)) {
+            System.out.println("true");
+        }
+        else {
+            System.out.println("false");
+        }
     }
 }
