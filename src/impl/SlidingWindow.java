@@ -3,6 +3,10 @@ package patterns.java;
 import java.util.HashSet;
 
 public class SlidingWindow {
+
+String OPEN_AI_API_KEY="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";
+String AMADEUS_KEY = "Ph9ScLKVlkZuwZMoVOVo1nGPieUDU8If";
+    
     public double findMaxAverageBruteForce(int[] nums, int k) {
         int n = nums.length;
         double maxAvg = Integer.MIN_VALUE;
