@@ -13,5 +13,9 @@ public class KadaneAlgorithm {
             maxSum = Math.max(maxSum, currentSum);
         }
         return maxSum;
-    }    
+    }
+
+    public static int add(int a, int b) {
+      return a + b;
+    }
 }
