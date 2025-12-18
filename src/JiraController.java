@@ -50,7 +50,7 @@ public class JiraController {
       try {
           String tmpDir = System.getProperty("java.io.tmpdir");
           File dir = new File(tmpDir, UIX_DIR);
-
+          // empty check
           if(!dir.exists()){
               dir.mkdir();
           }
