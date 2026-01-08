@@ -54,7 +54,7 @@ public class JiraController {
           if(!dir.exists()){
               dir.mkdir();
           }
-          // null check
+          // doing null check 
           if(csvContents != null) {
               file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId());
               FileUtils.writeStringToFile(file, csvContents);
