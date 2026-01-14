@@ -46,7 +46,7 @@ public class JiraController {
       Message message;
 
 
-      //convert a multipart file to File
+      //convert a multipart file to File here
       try {
           String tmpDir = System.getProperty("java.io.tmpdir");
           File dir = new File(tmpDir, UIX_DIR);
