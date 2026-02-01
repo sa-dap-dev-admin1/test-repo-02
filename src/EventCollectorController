@@ -1,0 +1,78 @@
+package src.impl;
+
+import static com.blueoptima.ms.rms.common.RMSApiConstants.RMS_INTERNAL_V1_PATH;
+
+import com.blueoptima.commons.dto.ecs.InstallationEventPayload;
+import com.blueoptima.commons.queue.helper.Result;
+import com.blueoptima.commons.queue.info.HookEventQueueInfo;
+import com.blueoptima.ms.ims.rest.csh.exceptions.CSHRestClientException;
+import com.blueoptima.ms.rms.dto.WebhookSecret;
+import com.blueoptima.ms.rms.service.internal.EventCollectorService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@Slf4j
+@RestController
+@RequestMapping(RMS_INTERNAL_V1_PATH)
+public class EventCollectorController {
+
+  @Autowired
+  private EventCollectorService eventCollectorService;
+
+  private static final String GET_GITHUB_APP_WEBHOOK_SECRET =
+      "/github/app/webhook/secret";
+  public static final String EVENTS_INSTALLATION_DETAILS =
+      "/github/app/installation/details";
+  public static final String EVENTS__DETAILS =
+      "/github/app/event/details";
+
+  @RequestMapping(value = GET_GITHUB_APP_WEBHOOK_SECRET, method = RequestMethod.GET)
+  public WebhookSecret getWebhookSecret(@RequestParam(value = "appId") String appId,
+      @RequestParam(value = "installationId") String installationId)
+      throws Exception {
+    try {
+      if (appId == null || installationId == null) {
+        throw new Exception("Invalid input received.");
+      }
+      return eventCollectorService.getWebhookSecret(appId, installationId);
+    } catch (Exception e) {
+      throw e;
+    }
+  }
+
+  @RequestMapping(value = EVENTS_INSTALLATION_DETAILS, method = RequestMethod.POST)
+  public Boolean saveInstallationDetails(@RequestBody InstallationEventPayload installationInfo) {
+    try {
+      eventCollectorService.addAppInstallationInfo(installationInfo);
+      return true;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return false;
+    }
+  }
+
+  @RequestMapping(value = EVENTS__DETAILS, method = RequestMethod.POST)
+  public Result saveEventDetails(@RequestBody HookEventQueueInfo hookEventQueueInfo) {
+    try {
+      return eventCollectorService.persistEvent(hookEventQueueInfo);
+    } catch (CSHRestClientException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @PostMapping("/installations/{installationId}/enrich-infra")
+  public ResponseEntity<Void> enrichInfraForInstallation(@PathVariable Long installationId,
+      @RequestParam Long enterpriseId) {
+    eventCollectorService.enrichInfraForInstallation(installationId, enterpriseId);
+    return ResponseEntity.accepted().build();
+  }
+
+}
