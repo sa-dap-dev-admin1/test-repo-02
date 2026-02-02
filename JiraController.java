@@ -23,10 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
 
 @RestController
 public class JiraController {
@@ -37,63 +33,53 @@ public class JiraController {
     private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
     public static final String UIX_DIR = "uix_invalid_csv_files";
+    private static final String TMP_DIR = "java.io.tmpdir";
 
     @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
     @SkipValidationCheck
     @CSVConverter
     public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
-        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserToken userToken = extractUserToken();
         String csvContents = MultipartUtil.getData(data, null);
-        
-        try {
-            Optional<File> file = writeCsvToFile(csvContents, userToken.getUserId());
-            return file.map(f -> jiraService.raiseTSUP(f))
-                       .orElseThrow(() -> new IOException("Failed to create CSV file"));
-        } catch (IOException e) {
-            logger.error("Error in file reading: ", e);
-            throw e;
-        }
+        File file = createAndWriteFile(csvContents, userToken);
+        return processJiraTicket(file);
     }
 
-    private Optional<File> writeCsvToFile(String csvContents, String userId) throws IOException {
+    private UserToken extractUserToken() {
+        return (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+    private File createAndWriteFile(String csvContents, UserToken userToken) throws IOException {
+        File dir = createTempDirectory();
         if (csvContents == null) {
-            return Optional.empty();
+            return null;
         }
-
-        Path dir = createDirectoryIfNotExists();
-        File file = new File(dir.toFile(), generateFileName(userId));
-        
-        try {
-            FileUtils.writeStringToFile(file, csvContents);
-            return Optional.of(file);
-        } catch (IOException e) {
-            logger.error("Error writing CSV content to file: ", e);
-            return Optional.empty();
-        }
+        return writeCSVToFile(csvContents, dir, userToken);
     }
 
-    private Path createDirectoryIfNotExists() throws IOException {
-        Path dir = Paths.get(System.getProperty("java.io.tmpdir"), UIX_DIR);
-        if (!Files.exists(dir)) {
-            Files.createDirectory(dir);
+    private File createTempDirectory() {
+        String tmpDir = System.getProperty(TMP_DIR);
+        File dir = new File(tmpDir, UIX_DIR);
+        if (!dir.exists()) {
+            dir.mkdir();
         }
         return dir;
     }
 
-    private String generateFileName(String userId) {
-        return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userId;
+    private File writeCSVToFile(String csvContents, File dir, UserToken userToken) throws IOException {
+        String fileName = FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
+        File file = new File(dir, fileName);
+        FileUtils.writeStringToFile(file, csvContents);
+        return file;
     }
 
-    // This method seems unrelated to Jira functionality and should be moved to a separate utility class
-    public int maxSubArray(int[] nums) {
-        int currentSum = nums[0];
-        int maxSum = nums[0];
-
-        for (int i = 1; i < nums.length; i++) {
-            currentSum = Math.max(nums[i], currentSum + nums[i]);
-            maxSum = Math.max(maxSum, currentSum);
+    private Message processJiraTicket(File file) {
+        try {
+            return jiraService.raiseTSUP(file);
+        } catch (IOException e) {
+            logger.error("Error in file reading: ", e);
+            throw new RuntimeException("Error processing Jira ticket", e);
         }
-        return maxSum;
     }
 }
