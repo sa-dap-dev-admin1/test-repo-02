@@ -3,13 +3,10 @@ package com.blueoptima.uix.controller;
 import com.blueoptima.iam.dto.PermissionsCode;
 import com.blueoptima.uix.SkipValidationCheck;
 import com.blueoptima.uix.annotations.CSVConverter;
-import com.blueoptima.uix.csv.FileSeparator;
 import com.blueoptima.uix.dto.Message;
 import com.blueoptima.uix.security.UserToken;
 import com.blueoptima.uix.security.auth.AccessCode;
 import com.blueoptima.uix.service.JiraService;
-import com.blueoptima.uix.util.MultipartUtil;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 
 @RestController
@@ -30,10 +26,10 @@ public class JiraController {
     @Autowired
     private JiraService jiraService;
 
-    private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
+    @Autowired
+    private JiraFileProcessor fileProcessor;
 
-    public static final String UIX_DIR = "uix_invalid_csv_files";
-    private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
+    private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
     @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
@@ -41,45 +37,23 @@ public class JiraController {
     @CSVConverter
     public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
         UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String csvContents = MultipartUtil.getData(data, null);
-        
-        File file = createTempFile(csvContents, userToken);
-        
-        return createJiraTicket(file);
-    }
-
-    private File createTempFile(String csvContents, UserToken userToken) throws IOException {
-        File dir = createOrGetDirectory();
-        
-        if (csvContents == null) {
-            return null;
-        }
-        
-        String fileName = generateFileName(userToken);
-        File file = new File(dir, fileName);
-        FileUtils.writeStringToFile(file, csvContents);
-        
-        return file;
-    }
-
-    private File createOrGetDirectory() {
-        File dir = new File(TMP_DIR, UIX_DIR);
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-        return dir;
-    }
-
-    private String generateFileName(UserToken userToken) {
-        return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
-    }
-
-    private Message createJiraTicket(File file) {
         try {
-            return jiraService.raiseTSUP(file);
+            return processJiraTicket(data, userToken);
         } catch (IOException e) {
-            logger.error("Error in file reading: ", e);
-            throw new RuntimeException("Error creating Jira ticket", e);
+            handleIOException(e);
+            throw e;
         }
+    }
+
+    private Message processJiraTicket(MultipartFile data, UserToken userToken) throws IOException {
+        String csvContents = fileProcessor.extractFileContents(data);
+        if (csvContents == null) {
+            return new Message("Error: Empty file content");
+        }
+        return jiraService.raiseTSUP(fileProcessor.createFile(csvContents, userToken));
+    }
+
+    private void handleIOException(IOException e) {
+        logger.error("Error in file processing: ", e);
     }
 }
