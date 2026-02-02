@@ -32,7 +32,9 @@ public class JiraController {
 
   private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
-    public static final String UIX_DIR = "uix_invalid_csv_files";
+  public static final String UIX_DIR = "uix_invalid_csv_files";
+
+  // TEST 1
 
   @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
@@ -46,7 +48,7 @@ public class JiraController {
       Message message;
 
 
-      //convert a multipart file to File. Test 8
+      //convert a multipart file to File. 
   
       try {
           String tmpDir = System.getProperty("java.io.tmpdir");
