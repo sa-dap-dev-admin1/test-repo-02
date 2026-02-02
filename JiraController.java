@@ -23,56 +23,77 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 @RestController
 public class JiraController {
 
-  @Autowired
-  private JiraService jiraService;
+    @Autowired
+    private JiraService jiraService;
 
-  private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
+    private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
-  public static final String UIX_DIR = "uix_invalid_csv_files";
+    public static final String UIX_DIR = "uix_invalid_csv_files";
 
-  @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
-  @SkipValidationCheck
-  @CSVConverter
-  public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
-    UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    String csvContents = MultipartUtil.getData(data, null);
-    File file = createFileFromCSV(csvContents, userToken);
-    return jiraService.raiseTSUP(file);
-  }
-
-  private File createFileFromCSV(String csvContents, UserToken userToken) throws IOException {
-    if (csvContents == null) {
-      return null;
+    @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
+    @SkipValidationCheck
+    @CSVConverter
+    public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
+        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String csvContents = MultipartUtil.getData(data, null);
+        
+        try {
+            Optional<File> file = writeCsvToFile(csvContents, userToken.getUserId());
+            return file.map(f -> jiraService.raiseTSUP(f))
+                       .orElseThrow(() -> new IOException("Failed to create CSV file"));
+        } catch (IOException e) {
+            logger.error("Error in file reading: ", e);
+            throw e;
+        }
     }
 
-    File dir = createOrGetDirectory();
-    String fileName = generateFileName(userToken);
-    File file = new File(dir, fileName);
+    private Optional<File> writeCsvToFile(String csvContents, String userId) throws IOException {
+        if (csvContents == null) {
+            return Optional.empty();
+        }
 
-    try {
-      FileUtils.writeStringToFile(file, csvContents);
-      return file;
-    } catch (IOException e) {
-      logger.error("Error in file writing: ", e);
-      throw e;
+        Path dir = createDirectoryIfNotExists();
+        File file = new File(dir.toFile(), generateFileName(userId));
+        
+        try {
+            FileUtils.writeStringToFile(file, csvContents);
+            return Optional.of(file);
+        } catch (IOException e) {
+            logger.error("Error writing CSV content to file: ", e);
+            return Optional.empty();
+        }
     }
-  }
 
-  private File createOrGetDirectory() {
-    String tmpDir = System.getProperty("java.io.tmpdir");
-    File dir = new File(tmpDir, UIX_DIR);
-    if (!dir.exists()) {
-      dir.mkdir();
+    private Path createDirectoryIfNotExists() throws IOException {
+        Path dir = Paths.get(System.getProperty("java.io.tmpdir"), UIX_DIR);
+        if (!Files.exists(dir)) {
+            Files.createDirectory(dir);
+        }
+        return dir;
     }
-    return dir;
-  }
 
-  private String generateFileName(UserToken userToken) {
-    return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
-  }
+    private String generateFileName(String userId) {
+        return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userId;
+    }
+
+    // This method seems unrelated to Jira functionality and should be moved to a separate utility class
+    public int maxSubArray(int[] nums) {
+        int currentSum = nums[0];
+        int maxSum = nums[0];
+
+        for (int i = 1; i < nums.length; i++) {
+            currentSum = Math.max(nums[i], currentSum + nums[i]);
+            maxSum = Math.max(maxSum, currentSum);
+        }
+        return maxSum;
+    }
 }
