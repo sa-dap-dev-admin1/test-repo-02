@@ -39,24 +39,25 @@ public class JiraController {
   @SkipValidationCheck
   @CSVConverter
   public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
-    UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    UserToken userToken = getUserToken();
     String csvContents = MultipartUtil.getData(data, null);
-    
-    File file = createCsvFile(csvContents, userToken);
-    return createJiraTicket(file);
+    File file = createFile(csvContents, userToken);
+    return raiseTicketWithJiraService(file);
   }
 
-  private File createCsvFile(String csvContents, UserToken userToken) throws IOException {
-    File dir = createOrGetDirectory();
+  private UserToken getUserToken() {
+    return (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+  }
+
+  private File createFile(String csvContents, UserToken userToken) throws IOException {
+    File dir = createDirectoryIfNotExists();
     if (csvContents == null) {
       return null;
     }
-    File file = new File(dir, generateFileName(userToken));
-    FileUtils.writeStringToFile(file, csvContents);
-    return file;
+    return writeContentToFile(csvContents, dir, userToken);
   }
 
-  private File createOrGetDirectory() {
+  private File createDirectoryIfNotExists() {
     String tmpDir = System.getProperty("java.io.tmpdir");
     File dir = new File(tmpDir, UIX_DIR);
     if (!dir.exists()) {
@@ -65,16 +66,23 @@ public class JiraController {
     return dir;
   }
 
+  private File writeContentToFile(String csvContents, File dir, UserToken userToken) throws IOException {
+    String fileName = generateFileName(userToken);
+    File file = new File(dir, fileName);
+    FileUtils.writeStringToFile(file, csvContents);
+    return file;
+  }
+
   private String generateFileName(UserToken userToken) {
     return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
   }
 
-  private Message createJiraTicket(File file) {
+  private Message raiseTicketWithJiraService(File file) {
     try {
       return jiraService.raiseTSUP(file);
     } catch (IOException e) {
       logger.error("Error in file reading: ", e);
-      throw new RuntimeException("Failed to create Jira ticket", e);
+      throw new RuntimeException("Error while raising Jira ticket", e);
     }
   }
 }
