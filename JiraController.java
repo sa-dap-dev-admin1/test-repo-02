@@ -41,45 +41,36 @@ public class JiraController {
   public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
     UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     String csvContents = MultipartUtil.getData(data, null);
-    
-    File file = createCsvFile(csvContents, userToken);
-    
-    return createJiraTicket(file);
+    File file = createCSVFile(csvContents, userToken);
+    return raiseJiraTicketWithFile(file);
   }
 
-  private File createCsvFile(String csvContents, UserToken userToken) throws IOException {
-    File dir = createTempDirectory();
-    
+  private File createCSVFile(String csvContents, UserToken userToken) throws IOException {
     if (csvContents == null) {
       return null;
     }
-    
-    String fileName = generateFileName(userToken);
-    File file = new File(dir, fileName);
-    FileUtils.writeStringToFile(file, csvContents);
-    
-    return file;
-  }
 
-  private File createTempDirectory() {
     String tmpDir = System.getProperty("java.io.tmpdir");
     File dir = new File(tmpDir, UIX_DIR);
     if (!dir.exists()) {
       dir.mkdir();
     }
-    return dir;
+
+    File file = new File(dir, generateFileName(userToken));
+    FileUtils.writeStringToFile(file, csvContents);
+    return file;
   }
 
   private String generateFileName(UserToken userToken) {
     return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
   }
 
-  private Message createJiraTicket(File file) {
+  private Message raiseJiraTicketWithFile(File file) {
     try {
       return jiraService.raiseTSUP(file);
     } catch (IOException e) {
       logger.error("Error in file reading: ", e);
-      throw new RuntimeException("Error creating Jira ticket", e);
+      throw new RuntimeException("Failed to raise Jira ticket", e);
     }
   }
 }
