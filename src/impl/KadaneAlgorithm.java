@@ -5,7 +5,7 @@ public class KadaneAlgorithm {
         int currentSum = nums[0]; // Start with the first element
         int maxSum = nums[0];     // Initialize maxSum with the first element
 
-        // Traverse the array from the second element
+        // Traverse the array from the second element. Test 1
         for (int i = 1; i < nums.length; i++) {
             // If currentSum is negative, reset to current element
             currentSum = Math.max(nums[i], currentSum + nums[i]);
