@@ -1,6 +1,8 @@
-package com.blueoptima.uix.util;
+package com.blueoptima.uix.controller;
 
 import com.blueoptima.uix.csv.FileSeparator;
+import com.blueoptima.uix.security.UserToken;
+import com.blueoptima.uix.util.MultipartUtil;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,28 +18,40 @@ public class JiraFileHandler {
     private static final Logger logger = LoggerFactory.getLogger(JiraFileHandler.class);
     private static final String UIX_DIR = "uix_invalid_csv_files";
 
-    public String extractCsvContents(MultipartFile data) throws IOException {
-        return MultipartUtil.getData(data, null);
+    public File processFile(MultipartFile data, UserToken userToken) throws IOException {
+        String csvContents = MultipartUtil.getData(data, null);
+        File tempDir = createTempDir();
+        return writeFile(tempDir, csvContents, userToken);
     }
 
-    public File createTempFile(String csvContents, String userId) throws IOException {
-        if (csvContents == null) {
-            return null;
-        }
-
+    private File createTempDir() {
         String tmpDir = System.getProperty("java.io.tmpdir");
         File dir = new File(tmpDir, UIX_DIR);
         if (!dir.exists()) {
             dir.mkdir();
         }
+        return dir;
+    }
 
-        File file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userId);
+    private File writeFile(File dir, String csvContents, UserToken userToken) throws IOException {
+        if (csvContents == null) {
+            logger.warn("CSV contents is null");
+            return null;
+        }
+
+        String fileName = generateFileName(userToken);
+        File file = new File(dir, fileName);
+        
         try {
             FileUtils.writeStringToFile(file, csvContents);
+            return file;
         } catch (IOException e) {
-            logger.error("Error in file writing: ", e);
+            logger.error("Error writing file: ", e);
             throw e;
         }
-        return file;
+    }
+
+    private String generateFileName(UserToken userToken) {
+        return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
     }
 }

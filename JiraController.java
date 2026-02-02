@@ -3,13 +3,10 @@ package com.blueoptima.uix.controller;
 import com.blueoptima.iam.dto.PermissionsCode;
 import com.blueoptima.uix.SkipValidationCheck;
 import com.blueoptima.uix.annotations.CSVConverter;
-import com.blueoptima.uix.csv.FileSeparator;
 import com.blueoptima.uix.dto.Message;
 import com.blueoptima.uix.security.UserToken;
 import com.blueoptima.uix.security.auth.AccessCode;
 import com.blueoptima.uix.service.JiraService;
-import com.blueoptima.uix.util.MultipartUtil;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,53 +27,28 @@ public class JiraController {
     @Autowired
     private JiraService jiraService;
 
-    private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
+    @Autowired
+    private JiraFileHandler jiraFileHandler;
 
-    private static final String UIX_DIR = "uix_invalid_csv_files";
+    private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
     @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
     @SkipValidationCheck
     @CSVConverter
-    public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
-        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String csvContents = MultipartUtil.getData(data, null);
+    public Message raiseJiraTicket(@RequestBody MultipartFile csvFile) throws IOException {
+        UserToken userToken = getUserToken();
+        File processedFile = jiraFileHandler.processFile(csvFile, userToken);
         
-        File file = createCsvFile(csvContents, userToken);
-        
-        return jiraService.raiseTSUP(file);
-    }
-
-    private File createCsvFile(String csvContents, UserToken userToken) throws IOException {
-        if (csvContents == null) {
-            logger.warn("CSV contents are null. No file will be created.");
-            return null;
-        }
-
-        File dir = createOrGetDirectory();
-        String fileName = generateFileName(userToken);
-        File file = new File(dir, fileName);
-
         try {
-            FileUtils.writeStringToFile(file, csvContents);
-            logger.info("CSV file created successfully: {}", file.getAbsolutePath());
-            return file;
+            return jiraService.raiseTSUP(processedFile);
         } catch (IOException e) {
-            logger.error("Error in file writing: ", e);
+            logger.error("Error in raising JIRA ticket: ", e);
             throw e;
         }
     }
 
-    private File createOrGetDirectory() {
-        String tmpDir = System.getProperty("java.io.tmpdir");
-        File dir = new File(tmpDir, UIX_DIR);
-        if (!dir.exists() && !dir.mkdir()) {
-            logger.warn("Failed to create directory: {}", dir.getAbsolutePath());
-        }
-        return dir;
-    }
-
-    private String generateFileName(UserToken userToken) {
-        return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
+    private UserToken getUserToken() {
+        return (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
