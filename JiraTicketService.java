@@ -1,10 +1,11 @@
-package com.blueoptima.uix.controller;
+package com.blueoptima.uix.service;
 
 import com.blueoptima.uix.dto.Message;
-import com.blueoptima.uix.service.JiraService;
+import com.blueoptima.uix.security.UserToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -18,19 +19,26 @@ public class JiraTicketService {
     @Autowired
     private JiraService jiraService;
 
+    @Autowired
+    private FileHandlingService fileHandlingService;
+
     public Message createJiraTicket(String csvContents) throws IOException {
-        File tempFile = null;
+        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        File file = null;
+        Message message;
+
         try {
-            tempFile = File.createTempFile("jira_ticket_", ".csv");
-            org.apache.commons.io.FileUtils.writeStringToFile(tempFile, csvContents);
-            return jiraService.raiseTSUP(tempFile);
+            file = fileHandlingService.createTemporaryFile(csvContents, userToken.getUserId());
+            message = jiraService.raiseTSUP(file);
         } catch (IOException e) {
             logger.error("Error in file processing: ", e);
             throw e;
         } finally {
-            if (tempFile != null && tempFile.exists()) {
-                tempFile.delete();
+            if (file != null) {
+                file.delete();
             }
         }
+
+        return message;
     }
 }
