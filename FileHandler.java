@@ -1,8 +1,10 @@
 package com.blueoptima.uix.util;
 
 import com.blueoptima.uix.csv.FileSeparator;
+import com.blueoptima.uix.security.UserToken;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,16 +12,12 @@ import java.io.IOException;
 @Component
 public class FileHandler {
 
-    public static final String UIX_DIR = "uix_invalid_csv_files";
+    private static final String UIX_DIR = "uix_invalid_csv_files";
 
-    public File createFile(String csvContents, String userId) throws IOException {
+    public File handleFileUpload(MultipartFile data, UserToken userToken) throws IOException {
+        String csvContents = MultipartUtil.getData(data, null);
         File dir = createTempDirectory();
-        if (csvContents != null) {
-            File file = new File(dir, generateFileName(userId));
-            FileUtils.writeStringToFile(file, csvContents);
-            return file;
-        }
-        return null;
+        return createFile(dir, csvContents, userToken);
     }
 
     private File createTempDirectory() {
@@ -31,7 +29,16 @@ public class FileHandler {
         return dir;
     }
 
-    private String generateFileName(String userId) {
-        return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userId;
+    private File createFile(File dir, String csvContents, UserToken userToken) throws IOException {
+        if (csvContents == null) {
+            return null;
+        }
+        File file = new File(dir, generateFileName(userToken));
+        FileUtils.writeStringToFile(file, csvContents);
+        return file;
+    }
+
+    private String generateFileName(UserToken userToken) {
+        return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
     }
 }
