@@ -1,24 +1,14 @@
 package com.blueoptima.uix.security;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import com.blueoptima.uix.security.UserToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
-@Configuration
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@Component
+public class SecurityConfig {
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-            .csrf().disable()
-            .authorizeRequests()
-                .antMatchers("/v1/admin/**").authenticated()
-                .anyRequest().permitAll()
-            .and()
-            .httpBasic();
+    public String getCurrentUserId() {
+        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userToken.getUserId();
     }
 }
