@@ -26,7 +26,8 @@ import java.io.IOException;
 
 @RestController
 public class JiraController {
-
+  // Test 8
+  
   @Autowired
   private JiraService jiraService;
 
@@ -44,9 +45,6 @@ public class JiraController {
       String csvContents = MultipartUtil.getData(data,null);
       File file = null;
       Message message;
-
-
-      //convert a multipart file to File. Test 8
   
       try {
           String tmpDir = System.getProperty("java.io.tmpdir");
