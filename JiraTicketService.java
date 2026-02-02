@@ -1,11 +1,11 @@
-package com.blueoptima.uix.service;
+package com.blueoptima.uix.controller;
 
 import com.blueoptima.uix.dto.Message;
-import com.blueoptima.uix.security.UserToken;
+import com.blueoptima.uix.service.JiraService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,34 +13,24 @@ import java.io.IOException;
 @Service
 public class JiraTicketService {
 
-    @Autowired
-    private FileHandlingService fileHandlingService;
-
-    @Autowired
-    private CSVProcessingService csvProcessingService;
+    private static final Logger logger = LoggerFactory.getLogger(JiraTicketService.class);
 
     @Autowired
     private JiraService jiraService;
 
-    @Autowired
-    private JiraControllerLogger logger;
-
-    public Message createJiraTicket(MultipartFile data) throws IOException {
-        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String csvContents = csvProcessingService.extractCSVContents(data);
-        File file = null;
-        Message message;
-
+    public Message createJiraTicket(String csvContents) throws IOException {
+        File tempFile = null;
         try {
-            file = fileHandlingService.createTemporaryFile(csvContents, userToken.getUserId());
-            message = jiraService.raiseTSUP(file);
+            tempFile = File.createTempFile("jira_ticket_", ".csv");
+            org.apache.commons.io.FileUtils.writeStringToFile(tempFile, csvContents);
+            return jiraService.raiseTSUP(tempFile);
         } catch (IOException e) {
-            logger.logFileReadingError(e);
+            logger.error("Error in file processing: ", e);
             throw e;
         } finally {
-            fileHandlingService.cleanupTemporaryFile(file);
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
         }
-
-        return message;
     }
 }

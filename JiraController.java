@@ -19,6 +19,9 @@ import java.io.IOException;
 public class JiraController {
 
     @Autowired
+    private JiraFileProcessor jiraFileProcessor;
+
+    @Autowired
     private JiraTicketService jiraTicketService;
 
     @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -26,6 +29,7 @@ public class JiraController {
     @SkipValidationCheck
     @CSVConverter
     public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
-        return jiraTicketService.createJiraTicket(data);
+        String csvContents = jiraFileProcessor.extractCsvContents(data);
+        return jiraTicketService.createJiraTicket(csvContents);
     }
 }
