@@ -23,81 +23,77 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 public class JiraController {
 
-  @Autowired
-  private JiraService jiraService;
+    @Autowired
+    private JiraService jiraService;
 
-  private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
+    private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
-  public static final String UIX_DIR = "uix_invalid_csv_files";
+    public static final String UIX_DIR = "uix_invalid_csv_files";
 
-  @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
-  @SkipValidationCheck
-  @CSVConverter
-  public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
-    UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    String csvContents = MultipartUtil.getData(data, null);
-    
-    // Extract file handling logic
-    Optional<File> file = createCsvFile(csvContents, userToken);
-    
-    // Raise TSUP ticket
-    return file.map(f -> {
-      try {
-        return jiraService.raiseTSUP(f);
-      } catch (IOException e) {
-        logger.error("Error in raising TSUP ticket: ", e);
-        throw new RuntimeException("Failed to raise TSUP ticket", e);
-      }
-    }).orElseThrow(() -> new IOException("Failed to create CSV file"));
-  }
+    /**
+     * Raises a Jira ticket based on the provided CSV data.
+     *
+     * @param csvData The MultipartFile containing CSV data
+     * @return A Message object with the result of the operation
+     * @throws IOException If there's an error processing the file
+     */
+    @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
+    @SkipValidationCheck
+    @CSVConverter
+    public Message raiseJiraTicket(@RequestBody MultipartFile csvData) throws IOException {
+        if (csvData == null || csvData.isEmpty()) {
+            throw new IllegalArgumentException("CSV data must not be null or empty");
+        }
 
-  // Helper method for CSV file creation and writing
-  private Optional<File> createCsvFile(String csvContents, UserToken userToken) throws IOException {
-    if (csvContents == null) {
-      return Optional.empty();
+        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String csvContents = MultipartUtil.getData(csvData, null);
+        
+        File csvFile = processCsvFile(csvContents, userToken.getUserId());
+        
+        try {
+            return jiraService.raiseTSUP(csvFile);
+        } catch (IOException e) {
+            logger.error("Error in raising Jira ticket: ", e);
+            throw e;
+        } finally {
+            if (csvFile != null && csvFile.exists()) {
+                csvFile.delete();
+            }
+        }
     }
 
-    try {
-      File dir = createOrGetDirectory();
-      File file = new File(dir, generateFileName(userToken));
-      FileUtils.writeStringToFile(file, csvContents);
-      return Optional.of(file);
-    } catch (IOException e) {
-      logger.error("Error in file creation: ", e);
-      throw e;
+    private File processCsvFile(String csvContents, String userId) throws IOException {
+        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"), UIX_DIR);
+        Files.createDirectories(tempDir);
+
+        String fileName = String.format("%s_%d_X%s", FileSeparator.CSV_SEPARATOR.getName(), System.currentTimeMillis(), userId);
+        Path filePath = tempDir.resolve(fileName);
+
+        try {
+            Files.writeString(filePath, csvContents);
+            return filePath.toFile();
+        } catch (IOException e) {
+            logger.error("Error in writing CSV file: ", e);
+            throw e;
+        }
     }
-  }
 
-  // Helper method to create or get the directory
-  private File createOrGetDirectory() throws IOException {
-    String tmpDir = System.getProperty("java.io.tmpdir");
-    File dir = new File(tmpDir, UIX_DIR);
-    if (!dir.exists() && !dir.mkdir()) {
-      throw new IOException("Failed to create directory: " + dir.getAbsolutePath());
+    public int maxSubArray(int[] nums) {
+        int currentSum = nums[0];
+        int maxSum = nums[0];
+
+        for (int i = 1; i < nums.length; i++) {
+            currentSum = Math.max(nums[i], currentSum + nums[i]);
+            maxSum = Math.max(maxSum, currentSum);
+        }
+        return maxSum;
     }
-    return dir;
-  }
-
-  // Helper method to generate file name
-  private String generateFileName(UserToken userToken) {
-    return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
-  }
-
-  // This method seems unrelated to JiraController functionality and should be moved to a separate utility class
-  public int maxSubArray(int[] nums) {
-    int currentSum = nums[0];
-    int maxSum = nums[0];
-
-    for (int i = 1; i < nums.length; i++) {
-      currentSum = Math.max(nums[i], currentSum + nums[i]);
-      maxSum = Math.max(maxSum, currentSum);
-    }
-    return maxSum;
-  }
 }
