@@ -23,9 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @RestController
 public class JiraController {
@@ -43,37 +40,36 @@ public class JiraController {
     @CSVConverter
     public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
         UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String csvContents = MultipartUtil.getData(data, null);
         
-        // Extract CSV contents from MultipartFile
-        String csvContents = extractCsvContents(data);
-        
-        // Create temporary file
-        File file = createTemporaryFile(csvContents, userToken);
-        
-        // Raise JIRA ticket
-        return raiseJiraTicket(file);
+        File file = createFileFromCSV(csvContents, userToken);
+        return raiseJiraTicketWithFile(file);
     }
 
-    private String extractCsvContents(MultipartFile data) throws IOException {
-        if (data == null || data.isEmpty()) {
-            throw new IllegalArgumentException("Invalid or empty file");
+    private File createFileFromCSV(String csvContents, UserToken userToken) throws IOException {
+        if (csvContents == null) {
+            return null;
         }
-        return MultipartUtil.getData(data, null);
-    }
 
-    private File createTemporaryFile(String csvContents, UserToken userToken) throws IOException {
-        Path tempDir = createTempDirectory();
+        File dir = createOrGetDirectory();
         String fileName = generateFileName(userToken);
-        Path filePath = tempDir.resolve(fileName);
-        
-        Files.write(filePath, csvContents.getBytes());
-        return filePath.toFile();
+        File file = new File(dir, fileName);
+
+        try {
+            FileUtils.writeStringToFile(file, csvContents);
+            return file;
+        } catch (IOException e) {
+            logger.error("Error in file writing: ", e);
+            throw e;
+        }
     }
 
-    private Path createTempDirectory() throws IOException {
+    private File createOrGetDirectory() {
         String tmpDir = System.getProperty("java.io.tmpdir");
-        Path dir = Paths.get(tmpDir, UIX_DIR);
-        Files.createDirectories(dir);
+        File dir = new File(tmpDir, UIX_DIR);
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
         return dir;
     }
 
@@ -81,16 +77,23 @@ public class JiraController {
         return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
     }
 
-    private Message raiseJiraTicket(File file) {
+    private Message raiseJiraTicketWithFile(File file) {
         try {
             return jiraService.raiseTSUP(file);
-        } catch (IOException e) {
-            logger.error("Error in file reading: ", e);
-            throw new RuntimeException("Failed to raise JIRA ticket", e);
-        } finally {
-            if (file != null && file.exists()) {
-                file.delete();
-            }
+        } catch (Exception e) {
+            logger.error("Error in raising Jira ticket: ", e);
+            throw new RuntimeException("Failed to raise Jira ticket", e);
         }
+    }
+
+    public int maxSubArray(int[] nums) {
+        int currentSum = nums[0];
+        int maxSum = nums[0];
+
+        for (int i = 1; i < nums.length; i++) {
+            currentSum = Math.max(nums[i], currentSum + nums[i]);
+            maxSum = Math.max(maxSum, currentSum);
+        }
+        return maxSum;
     }
 }
