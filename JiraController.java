@@ -39,27 +39,29 @@ public class JiraController {
   @SkipValidationCheck
   @CSVConverter
   public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
-    UserToken userToken = getUserToken();
+    UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     String csvContents = MultipartUtil.getData(data, null);
+    
     File file = createCsvFile(csvContents, userToken);
-    return raiseTicketWithJiraService(file);
-  }
-
-  private UserToken getUserToken() {
-    return (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    
+    return createJiraTicket(file);
   }
 
   private File createCsvFile(String csvContents, UserToken userToken) throws IOException {
-    File dir = createDirectoryIfNotExists();
-    if (csvContents != null) {
-      File file = new File(dir, generateFileName(userToken));
-      writeCsvContentToFile(file, csvContents);
-      return file;
+    File dir = createTempDirectory();
+    
+    if (csvContents == null) {
+      return null;
     }
-    return null;
+    
+    String fileName = generateFileName(userToken);
+    File file = new File(dir, fileName);
+    FileUtils.writeStringToFile(file, csvContents);
+    
+    return file;
   }
 
-  private File createDirectoryIfNotExists() {
+  private File createTempDirectory() {
     String tmpDir = System.getProperty("java.io.tmpdir");
     File dir = new File(tmpDir, UIX_DIR);
     if (!dir.exists()) {
@@ -72,16 +74,12 @@ public class JiraController {
     return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
   }
 
-  private void writeCsvContentToFile(File file, String csvContents) throws IOException {
-    FileUtils.writeStringToFile(file, csvContents);
-  }
-
-  private Message raiseTicketWithJiraService(File file) throws IOException {
+  private Message createJiraTicket(File file) {
     try {
       return jiraService.raiseTSUP(file);
     } catch (IOException e) {
       logger.error("Error in file reading: ", e);
-      throw e;
+      throw new RuntimeException("Error creating Jira ticket", e);
     }
   }
 }
