@@ -46,7 +46,7 @@ public class JiraController {
       Message message;
 
 
-      //convert a multipart file to File. Test 8
+      //convert a multipart file to File. 
   
       try {
           String tmpDir = System.getProperty("java.io.tmpdir");
