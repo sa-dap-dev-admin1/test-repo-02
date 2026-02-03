@@ -1,44 +1,73 @@
 package patterns.java;
 
 import java.util.Arrays;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.function.IntPredicate;
 
 public class MonotonicStack {
 
+    /**
+     * Finds the next greater element for each element in the input array.
+     *
+     * @param nums The input array of integers.
+     * @return An array where each element is the next greater element for the corresponding input element.
+     */
     public int[] nextGreaterElement(int[] nums) {
-        // Test 3
-        int n = nums.length;
-        int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
-
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
+        if (nums == null || nums.length == 0) {
+            return new int[0];
         }
+
+        int n = nums.length;
+        int[] result = new int[n];
+        Arrays.fill(result, -1);
+        Deque<Integer> stack = new ArrayDeque<>();
+
+        for (int i = 0; i < n; i++) {
+            processMonotonicStack(nums, result, stack, i, current -> nums[i] > nums[current]);
+        }
+
         return result;
     }
 
+    /**
+     * Calculates the number of days to wait for a warmer temperature.
+     *
+     * @param temperatures The input array of daily temperatures.
+     * @return An array where each element represents the number of days to wait for a warmer temperature.
+     */
     public int[] dailyTemperatures(int[] temperatures) {
-        int n = temperatures.length;
-        int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
-
-        // Iterate through the temperature array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
-            }
-            stack.push(i); // Push current index onto the stack
+        if (temperatures == null || temperatures.length == 0) {
+            return new int[0];
         }
 
-        return result; // Return the computed results
-    }    
+        int n = temperatures.length;
+        int[] result = new int[n];
+        Deque<Integer> stack = new ArrayDeque<>();
+
+        for (int currentDay = 0; currentDay < n; currentDay++) {
+            processMonotonicStack(temperatures, result, stack, currentDay,
+                    prevDay -> temperatures[currentDay] > temperatures[prevDay]);
+        }
+
+        return result;
+    }
+
+    /**
+     * Helper method to process the monotonic stack for both nextGreaterElement and dailyTemperatures.
+     *
+     * @param inputArray The input array (nums or temperatures).
+     * @param result The result array to be populated.
+     * @param stack The monotonic stack.
+     * @param currentIndex The current index being processed.
+     * @param comparisonPredicate The predicate for comparing elements.
+     */
+    private void processMonotonicStack(int[] inputArray, int[] result, Deque<Integer> stack,
+                                       int currentIndex, IntPredicate comparisonPredicate) {
+        while (!stack.isEmpty() && comparisonPredicate.test(stack.peek())) {
+            int prevIndex = stack.pop();
+            result[prevIndex] = currentIndex - prevIndex;
+        }
+        stack.push(currentIndex);
+    }
 }
