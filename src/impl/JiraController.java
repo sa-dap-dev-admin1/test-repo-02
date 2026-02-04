@@ -27,7 +27,7 @@ import java.io.IOException;
 @RestController
 public class JiraController {
 
-  // TEST Latest
+  // TEST 1
   @Autowired
   private JiraService jiraService;
 
