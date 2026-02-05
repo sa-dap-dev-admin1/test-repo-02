@@ -25,6 +25,7 @@ public class OrderProcessorBad {
         }
         System.out.println("TOTAL=" + total);
         // duplicated logic end
+        //add
     }
 
     static void add(String id, int qty, double price, String country) {
