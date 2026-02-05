@@ -1,44 +1,49 @@
 package patterns.java;
 
 import java.util.Arrays;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.function.BiPredicate;
 
 public class MonotonicStack {
 
+    /**
+     * Finds the next greater element for each element in the input array.
+     * @param nums The input array of integers.
+     * @return An array where each element is the next greater element for the corresponding element in the input array.
+     */
     public int[] nextGreaterElement(int[] nums) {
-        // Test 3
-        int n = nums.length;
-        int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
-
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
-        }
-        return result;
+        return monotonicStackOperation(nums, (current, top) -> current > top);
     }
 
+    /**
+     * Calculates the number of days to wait for a warmer temperature.
+     * @param temperatures The input array of daily temperatures.
+     * @return An array where each element is the number of days to wait for a warmer temperature.
+     */
     public int[] dailyTemperatures(int[] temperatures) {
-        int n = temperatures.length;
-        int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
+        return monotonicStackOperation(temperatures, (current, top) -> current > top);
+    }
 
-        // Iterate through the temperature array
+    /**
+     * Generic method to perform monotonic stack operations.
+     * @param array The input array.
+     * @param comparison The comparison function to determine stack operations.
+     * @return The result array after applying the monotonic stack algorithm.
+     */
+    private int[] monotonicStackOperation(int[] array, BiPredicate<Integer, Integer> comparison) {
+        int n = array.length;
+        int[] result = new int[n];
+        Deque<Integer> stack = new ArrayDeque<>();
+
         for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
+            while (!stack.isEmpty() && comparison.test(array[i], array[stack.peek()])) {
+                int prevIndex = stack.pop();
+                result[prevIndex] = i - prevIndex;
             }
-            stack.push(i); // Push current index onto the stack
+            stack.push(i);
         }
 
-        return result; // Return the computed results
-    }    
+        return result;
+    }
 }
