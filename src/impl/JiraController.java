@@ -46,7 +46,7 @@ public class JiraController {
       Message message;
 
 
-      //convert a multipart file to File. Test 8
+      //convert a multipart file to File. 
   
       try {
           String tmpDir = System.getProperty("java.io.tmpdir");
@@ -67,7 +67,7 @@ public class JiraController {
           logger.error("Error in file reading: ",e);
           throw e;
       }
-
+         // Testing UAT
 
       return message;
 
