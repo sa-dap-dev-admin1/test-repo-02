@@ -2,43 +2,40 @@ package patterns.java;
 
 import java.util.Arrays;
 import java.util.Stack;
+import java.util.function.BiPredicate;
 
 public class MonotonicStack {
 
     public int[] nextGreaterElement(int[] nums) {
         // Test 3
-        int n = nums.length;
-        int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
-
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
-        }
-        return result;
+        return processMonotonicStack(nums, (current, top) -> current > top);
     }
 
     public int[] dailyTemperatures(int[] temperatures) {
-        int n = temperatures.length;
-        int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
+        return processMonotonicStack(temperatures, (current, top) -> current > top);
+    }
 
-        // Iterate through the temperature array
+    private int[] processMonotonicStack(int[] array, BiPredicate<Integer, Integer> comparison) {
+        validateInput(array);
+        int n = array.length;
+        int[] result = new int[n];
+        Arrays.fill(result, -1);
+        Stack<Integer> stack = new Stack<>();
+
         for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
+            while (!stack.isEmpty() && comparison.test(array[i], array[stack.peek()])) {
+                int index = stack.pop();
+                result[index] = i - index;
             }
-            stack.push(i); // Push current index onto the stack
+            stack.push(i);
         }
 
-        return result; // Return the computed results
-    }    
+        return result;
+    }
+
+    private void validateInput(int[] array) {
+        if (array == null || array.length == 0) {
+            throw new IllegalArgumentException("Input array must not be null or empty");
+        }
+    }
 }
