@@ -1,44 +1,48 @@
 package patterns.java;
 
 import java.util.Arrays;
-import java.util.Stack;
+import java.util.Deque;
+import java.util.ArrayDeque;
 
 public class MonotonicStack {
 
     public int[] nextGreaterElement(int[] nums) {
-        // Test 3
         int n = nums.length;
-        int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
+        int[] result = new int[n];
+        Arrays.fill(result, -1);
+        Deque<Integer> stack = new ArrayDeque<>();
 
-        // Iterate through the array
         for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
+            while (isStackNotEmptyAndCurrentGreaterThanTop(stack, nums, i)) {
+                int index = stack.pop();
+                result[index] = nums[i];
             }
-            stack.push(i); // Push the current index onto the stack
+            stack.push(i);
         }
         return result;
     }
 
     public int[] dailyTemperatures(int[] temperatures) {
         int n = temperatures.length;
-        int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
+        int[] result = new int[n];
+        Deque<Integer> stack = new ArrayDeque<>();
 
-        // Iterate through the temperature array
         for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
+            while (isStackNotEmptyAndCurrentWarmerThanTop(stack, temperatures, i)) {
+                int prevIndex = stack.pop();
+                result[prevIndex] = i - prevIndex;
             }
-            stack.push(i); // Push current index onto the stack
+            stack.push(i);
         }
 
-        return result; // Return the computed results
-    }    
+        return result;
+    }
+
+    private boolean isStackNotEmptyAndCurrentGreaterThanTop(Deque<Integer> stack, int[] nums, int currentIndex) {
+        return !stack.isEmpty() && nums[currentIndex] > nums[stack.peek()];
+    }
+
+    private boolean isStackNotEmptyAndCurrentWarmerThanTop(Deque<Integer> stack, int[] temperatures, int currentIndex) {
+        return !stack.isEmpty() && temperatures[currentIndex] > temperatures[stack.peek()];
+    }
 }
