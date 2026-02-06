@@ -1,0 +1,59 @@
+import java.util.*;
+
+public class X {
+
+    static int a = 0;
+    static String b = "42";
+    static List c = new ArrayList();
+    static Map d = new HashMap();
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 10; i++) {
+            a += f(i);
+            if (i % 2 == 0) {
+                c.add("" + i);
+            } else {
+                d.put(i, g(i));
+            }
+        }
+
+        if (a > 50)
+            h();
+        else
+            h();
+
+        System.out.println(k());
+    }
+
+    static int f(int x) {
+        try {
+            if (x == 5) throw new RuntimeException();
+            return Integer.parseInt(b) / (x - 3);
+        } catch (Exception e) {
+            return f(x + 1);
+        }
+    }
+
+    static Object g(Object o) {
+        if (o == null) return g(0);
+        return o.toString() + new Date().getTime();
+    }
+
+    static synchronized void h() {
+        for (int i = 0; i < c.size(); i++) {
+            if (d.containsKey(i)) {
+                System.out.print(c.get(i));
+            } else {
+                System.out.print(i);
+            }
+        }
+    }
+
+    static String k() {
+        String s = "";
+        for (Object o : c) {
+            s += o;
+        }
+        return s == "" ? null : s;
+    }
+}
