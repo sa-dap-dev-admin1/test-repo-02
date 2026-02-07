@@ -1,7 +1,9 @@
 package patterns.java;
 
 import java.util.Arrays;
-import java.util.Stack;
+import java.util.Deque;
+import java.util.ArrayDeque;
+import java.util.function.BiPredicate;
 
 public class MonotonicStack {
 
@@ -10,35 +12,42 @@ public class MonotonicStack {
         int n = nums.length;
         int[] result = new int[n]; // Output array
         Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
 
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
-        }
+        BiPredicate<Integer, Integer> condition = (current, top) -> nums[current] > nums[top];
+        applyMonotonicStack(nums, result, condition, (i, top) -> nums[i]);
+
         return result;
     }
 
     public int[] dailyTemperatures(int[] temperatures) {
         int n = temperatures.length;
         int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
 
-        // Iterate through the temperature array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
-            }
+        BiPredicate<Integer, Integer> condition = (current, top) -> temperatures[current] > temperatures[top];
+        applyMonotonicStack(temperatures, result, condition, (i, top) -> i - top);
+
+        return result;
+    }
+
+    private void applyMonotonicStack(int[] array, int[] result, BiPredicate<Integer, Integer> condition, ResultComputer resultComputer) {
+        Deque<Integer> stack = new ArrayDeque<>(); // Monotonic decreasing stack (stores indices)
+
+        // Iterate through the array
+        for (int i = 0; i < array.length; i++) {
+            processStackTop(i, stack, result, condition, resultComputer);
             stack.push(i); // Push current index onto the stack
         }
+    }
 
-        return result; // Return the computed results
-    }    
+    private void processStackTop(int currentIndex, Deque<Integer> stack, int[] result, BiPredicate<Integer, Integer> condition, ResultComputer resultComputer) {
+        while (!stack.isEmpty() && condition.test(currentIndex, stack.peek())) {
+            int prevIndex = stack.pop();
+            result[prevIndex] = resultComputer.compute(currentIndex, prevIndex);
+        }
+    }
+
+    @FunctionalInterface
+    private interface ResultComputer {
+        int compute(int currentIndex, int prevIndex);
+    }
 }
