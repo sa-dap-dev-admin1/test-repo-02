@@ -1,44 +1,74 @@
 package patterns.java;
 
 import java.util.Arrays;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
+/**
+ * Class containing methods for solving problems using monotonic stack pattern.
+ */
 public class MonotonicStack {
 
+    /**
+     * Finds the next greater element for each element in the given array.
+     *
+     * @param nums The input array of integers.
+     * @return An array where each element is the next greater element for the corresponding element in nums.
+     */
     public int[] nextGreaterElement(int[] nums) {
-        // Test 3
-        int n = nums.length;
-        int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
-
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
-        }
+        int arrayLength = nums.length;
+        int[] result = new int[arrayLength];
+        Arrays.fill(result, -1);
+        
+        processMonotonicStack(nums, (i, top) -> {
+            result[top] = nums[i];
+            return true;
+        });
+        
         return result;
     }
 
+    /**
+     * Calculates the number of days to wait for a warmer temperature.
+     *
+     * @param temperatures The input array of daily temperatures.
+     * @return An array where each element represents the number of days to wait for a warmer temperature.
+     */
     public int[] dailyTemperatures(int[] temperatures) {
-        int n = temperatures.length;
-        int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
+        int arrayLength = temperatures.length;
+        int[] result = new int[arrayLength];
+        
+        processMonotonicStack(temperatures, (i, top) -> {
+            result[top] = i - top;
+            return true;
+        });
+        
+        return result;
+    }
 
-        // Iterate through the temperature array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
+    /**
+     * Helper method to process the array using a monotonic stack pattern.
+     *
+     * @param arr The input array to process.
+     * @param onPop A lambda function to execute when an element is popped from the stack.
+     */
+    private void processMonotonicStack(int[] arr, StackPopOperation onPop) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        
+        for (int i = 0; i < arr.length; i++) {
+            while (!stack.isEmpty() && arr[i] > arr[stack.peek()]) {
+                int top = stack.pop();
+                onPop.execute(i, top);
             }
-            stack.push(i); // Push current index onto the stack
+            stack.push(i);
         }
+    }
 
-        return result; // Return the computed results
-    }    
+    /**
+     * Functional interface for stack pop operation.
+     */
+    @FunctionalInterface
+    private interface StackPopOperation {
+        boolean execute(int currentIndex, int stackTopIndex);
+    }
 }
