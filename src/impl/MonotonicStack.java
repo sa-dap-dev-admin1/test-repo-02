@@ -11,16 +11,18 @@ public class MonotonicStack {
         Arrays.fill(result, -1); // Default to -1 if no greater element exists
         Stack<Integer> stack = new Stack<>(); // Stack stores indices
 
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
+        for (int currentIndex = 0; currentIndex < n; currentIndex++) {
+            processGreaterElement(nums, result, stack, currentIndex);
         }
         return result;
+    }
+
+    private void processGreaterElement(int[] nums, int[] result, Stack<Integer> stack, int currentIndex) {
+        while (!stack.isEmpty() && nums[currentIndex] > nums[stack.peek()]) {
+            int previousIndex = stack.pop();
+            result[previousIndex] = nums[currentIndex];
+        }
+        stack.push(currentIndex);
     }
 
     public int[] dailyTemperatures(int[] temperatures) {
@@ -28,16 +30,18 @@ public class MonotonicStack {
         int[] result = new int[n]; // Result array initialized with 0s
         Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
 
-        // Iterate through the temperature array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
-            }
-            stack.push(i); // Push current index onto the stack
+        for (int currentDay = 0; currentDay < n; currentDay++) {
+            processWarmerTemperature(temperatures, result, stack, currentDay);
         }
 
-        return result; // Return the computed results
-    }    
+        return result;
+    }
+
+    private void processWarmerTemperature(int[] temperatures, int[] result, Stack<Integer> stack, int currentDay) {
+        while (!stack.isEmpty() && temperatures[currentDay] > temperatures[stack.peek()]) {
+            int previousDay = stack.pop();
+            result[previousDay] = currentDay - previousDay;
+        }
+        stack.push(currentDay);
+    }
 }
