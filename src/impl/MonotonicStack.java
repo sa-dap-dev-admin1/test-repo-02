@@ -1,43 +1,74 @@
 package patterns.java;
 
 import java.util.Arrays;
-import java.util.Stack;
-//test 23
+import java.util.Deque;
+import java.util.ArrayDeque;
+
+/**
+ * This class provides implementations of monotonic stack-based algorithms.
+ */
 public class MonotonicStack {
 
+    /**
+     * Finds the next greater element for each element in the input array.
+     *
+     * @param nums The input array of integers.
+     * @return An array where each element is the next greater element for the corresponding input element.
+     */
     public int[] nextGreaterElement(int[] nums) {
-        int n = nums.length;
-        int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
+        int length = nums.length;
+        int[] result = new int[length];
+        Arrays.fill(result, -1);
+        Deque<Integer> stack = new ArrayDeque<>();
 
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
+        for (int currentIndex = 0; currentIndex < length; currentIndex++) {
+            processMonotonicStack(nums, result, stack, currentIndex);
         }
         return result;
     }
 
+    /**
+     * Calculates the number of days until a warmer temperature for each day.
+     *
+     * @param temperatures The input array of daily temperatures.
+     * @return An array where each element is the number of days to wait for a warmer temperature.
+     */
     public int[] dailyTemperatures(int[] temperatures) {
-        int n = temperatures.length;
-        int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
+        int length = temperatures.length;
+        int[] result = new int[length];
+        Deque<Integer> stack = new ArrayDeque<>();
 
-        // Iterate through the temperature array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
-            }
-            stack.push(i); // Push current index onto the stack
+        for (int currentIndex = 0; currentIndex < length; currentIndex++) {
+            processMonotonicStack(temperatures, result, stack, currentIndex);
         }
 
-        return result; // Return the computed results
-    }    
+        return result;
+    }
+
+    /**
+     * Processes the monotonic stack for both nextGreaterElement and dailyTemperatures methods.
+     *
+     * @param inputArray The input array (either nums or temperatures).
+     * @param result The result array to be populated.
+     * @param stack The monotonic stack used for processing.
+     * @param currentIndex The current index being processed.
+     */
+    private void processMonotonicStack(int[] inputArray, int[] result, Deque<Integer> stack, int currentIndex) {
+        while (!stack.isEmpty() && inputArray[currentIndex] > inputArray[stack.peek()]) {
+            int prevIndex = stack.pop();
+            result[prevIndex] = isNextGreaterElement(result) ? inputArray[currentIndex] : currentIndex - prevIndex;
+        }
+        stack.push(currentIndex);
+    }
+
+    /**
+     * Determines if the result array is for nextGreaterElement or dailyTemperatures.
+     *
+     * @param result The result array being populated.
+     * @return true if it's for nextGreaterElement, false for dailyTemperatures.
+     */
+    private boolean isNextGreaterElement(int[] result) {
+        return result[0] == -1;
+    }
 }
+//test 23
