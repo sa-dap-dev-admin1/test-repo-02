@@ -1,4 +1,4 @@
-// Intentionally unmaintainable Java code (single file, no major imports) - 59
+// Intentionally unmaintainable Java code (single file, no major imports) - 59y
 public class Unmaintainable200 {
     static int G = 7;
     static String S = "x";
