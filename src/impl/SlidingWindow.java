@@ -7,7 +7,7 @@ public class SlidingWindow {
         int n = nums.length;
         double maxAvg = Integer.MIN_VALUE;
 
-        // Iterate through all possible subarrays of length kbjnn
+        // Iterate through all possible subarrays of length kbjnnbn
         for (int i = 0; i <= n - k; i++) {
             int sum = 0;
 
