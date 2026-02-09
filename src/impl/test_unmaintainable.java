@@ -1,101 +1,33 @@
 public class Nightmare {
     public static void main(String[] args) {
-        String a = args != null && args.length > 0 ? args[0] : "";
-        String b = "";
-        int x = 0;
-        int y = 1;
-        int z = 0;
-        while (x < a.length()) {
-            char c = a.charAt(x);
-            if (c >= '0' && c <= '9') {
-                z = z + (c - '0');
-            } else {
-                if (c >= 'a' && c <= 'z') {
-                    z = z + c;
-                } else {
-                    if (c >= 'A' && c <= 'Z') {
-                        z = z + (c + 32);
-                    } else {
-                        z = z + 1;
-                    }
-                }
-            }
-            if (z % 2 == 0) {
-                b = b + c;
-            } else {
-                b = c + b;
-            }
-            x = x + y;
-            if (x < 0) {
-                x = 0;
-            }
-        }
-        String r = "";
-        int i = 0;
-        while (i < b.length()) {
-            char d = b.charAt(i);
-            if (d == '_') {
-                r = r + "-";
-            } else {
-                r = r + d;
-            }
-            if (r.length() > 50) {
-                r = r.substring(0, 25) + r.substring(25);
-            }
-            i = i + 1;
-        }
-        int k = 0;
-        int m = 0;
-        while (k < r.length()) {
-            m = m + r.charAt(k);
-            if (m > 9999) {
-                m = m - 9999;
-            }
-            k = k + 1;
-        }
-        if (m % 3 == 0) {
-            System.out.println("OK:" + r + ":" + m);
-        } else {
-            if (m % 3 == 1) {
-                System.out.println("WARN:" + r + ":" + m);
-            } else {
-                System.out.println("FAIL:" + r + ":" + m);
-            }
-        }
+        String input = args.length > 0 ? args[0] : "";
+        
+        String processed = InputProcessor.processInput(input);
+        String transformed = StringTransformer.transform(processed);
+        int checksum = ChecksumCalculator.calculate(transformed);
+        String output = OutputGenerator.generate(transformed, checksum);
+        
+        System.out.println(output);
     }
-    static String helper(String s) {
-        String t = "";
-        int i = 0;
-        while (i < s.length()) {
+    
+    static String alternateStringManipulation(String s) {
+        StringBuilder t = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (i % 2 == 0) {
-                t = t + c;
+                t.append(c);
             } else {
-                t = c + t;
-            }
-            i = i + 1;
-        }
-        if (t.length() > 0) {
-            if (t.charAt(0) == 'x') {
-                t = t.substring(1);
+                t.insert(0, c);
             }
         }
-        return t;
-        //comment
+        return t.length() > 0 && t.charAt(0) == 'x' ? t.substring(1) : t.toString();
     }
-    static int mystery(int a, int b) {
-        int r = 0;
-        int i = 0;
-        while (i < a) {
-            r = r + b;
-            if (r > 1000) {
-                r = r - 1000;
-            }
-            i = i + 1;
+    
+    static int moduloMultiplication(int a, int b) {
+        int result = 0;
+        for (int i = 0; i < a; i++) {
+            result = (result + b) % 1000;
         }
-        return r;
-    }
-    static void unused() {
-        int x = 0;
+        return result;
     }
 }
