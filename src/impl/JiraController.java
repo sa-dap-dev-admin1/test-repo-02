@@ -32,60 +32,61 @@ public class JiraController {
 
   private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
-    public static final String UIX_DIR = "uix_invalid_csv_files";
+  public static final String UIX_DIR = "uix_invalid_csv_files";
 
   @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
   @SkipValidationCheck
   @CSVConverter
   public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
+    UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    String csvContents = MultipartUtil.getData(data, null);
+    File file = null;
+    Message message;
 
-      UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-      String csvContents = MultipartUtil.getData(data,null);
-      File file = null;
-      Message message;
+    try {
+      file = createCSVFile(csvContents, userToken);
+      message = jiraService.raiseTSUP(file);
+    } catch (IOException e) {
+      logger.error("Error in file reading: ", e);
+      throw e;
+    }
 
+    return message;
+  }
 
-      //convert a multipart file to File. Test 8
-  
-      try {
-          String tmpDir = System.getProperty("java.io.tmpdir");
-          File dir = new File(tmpDir, UIX_DIR);
-          // empty check here.
-          if(!dir.exists()){
-              dir.mkdir();
-          }
-          // doing null check 
-          if(csvContents != null) {
-              file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId());
-              FileUtils.writeStringToFile(file, csvContents);
-          }
+  private File createCSVFile(String csvContents, UserToken userToken) throws IOException {
+    File dir = createTempDirectory();
+    if (csvContents == null) {
+      return null;
+    }
+    String fileName = generateUniqueFileName(userToken);
+    File file = new File(dir, fileName);
+    FileUtils.writeStringToFile(file, csvContents);
+    return file;
+  }
 
-          message = jiraService.raiseTSUP(file);
+  private File createTempDirectory() {
+    String tmpDir = System.getProperty("java.io.tmpdir");
+    File dir = new File(tmpDir, UIX_DIR);
+    if (!dir.exists()) {
+      dir.mkdir();
+    }
+    return dir;
+  }
 
-      } catch (IOException e) {
-          logger.error("Error in file reading: ",e);
-          throw e;
-      }
-
-
-      return message;
-
-
-      }
+  private String generateUniqueFileName(UserToken userToken) {
+    return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
+  }
 
   public int maxSubArray(int[] nums) {
-    int currentSum = nums[0]; // Start with the first element
-    int maxSum = nums[0];     // Initialize maxSum with the first element
+    int currentSum = nums[0];
+    int maxSum = nums[0];
 
-    // Traverse the array from the second element
     for (int i = 1; i < nums.length; i++) {
-      // If currentSum is negative, reset to current element
       currentSum = Math.max(nums[i], currentSum + nums[i]);
-      // Update maxSum if currentSum is greater
       maxSum = Math.max(maxSum, currentSum);
     }
     return maxSum;
   }
-
 }
