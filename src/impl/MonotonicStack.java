@@ -5,40 +5,55 @@ import java.util.Stack;
 
 public class MonotonicStack {
 
+    /**
+     * Finds the next greater element for each element in the input array.
+     * 
+     * @param nums The input array of integers.
+     * @return An array where each element is the next greater element for the corresponding element in nums.
+     */
     public int[] nextGreaterElement(int[] nums) {
-        // Test 3
         int n = nums.length;
-        int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
+        int[] result = new int[n];
+        Arrays.fill(result, -1);
+        Stack<Integer> stack = new Stack<>();
 
-        // Iterate through the array
         for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
+            processStack(nums, result, stack, i);
         }
         return result;
     }
 
+    /**
+     * Calculates the number of days to wait for a warmer temperature.
+     * 
+     * @param temperatures The input array of daily temperatures.
+     * @return An array where each element represents the number of days to wait for a warmer temperature.
+     */
     public int[] dailyTemperatures(int[] temperatures) {
         int n = temperatures.length;
-        int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
+        int[] result = new int[n];
+        Stack<Integer> stack = new Stack<>();
 
-        // Iterate through the temperature array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
-            }
-            stack.push(i); // Push current index onto the stack
+        for (int currentDay = 0; currentDay < n; currentDay++) {
+            processStack(temperatures, result, stack, currentDay);
         }
 
-        return result; // Return the computed results
-    }    
+        return result;
+    }
+
+    /**
+     * Helper method to process the stack for both nextGreaterElement and dailyTemperatures.
+     * 
+     * @param values The input array (either nums or temperatures).
+     * @param result The result array to be populated.
+     * @param stack The stack used for processing.
+     * @param currentIndex The current index being processed.
+     */
+    private void processStack(int[] values, int[] result, Stack<Integer> stack, int currentIndex) {
+        while (!stack.isEmpty() && values[currentIndex] > values[stack.peek()]) {
+            int prevIndex = stack.pop();
+            result[prevIndex] = currentIndex - prevIndex;
+        }
+        stack.push(currentIndex);
+    }
 }
