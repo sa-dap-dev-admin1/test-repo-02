@@ -1,5 +1,5 @@
 package patterns.java;
-
+//commit
 class ListNode {
     int val;
     ListNode next;
