@@ -1,5 +1,5 @@
 public class Nightmare {
-    //comment
+    //comment 0
     public static void main(String[] args) {
         String a = args != null && args.length > 0 ? args[0] : "";
         String b = "";
