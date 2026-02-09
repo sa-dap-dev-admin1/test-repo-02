@@ -13,7 +13,7 @@ public class Unmaintainable200 {
         String out = g(r, in);
         System.out.println(out);
 
-        // random side effects
+        // random side effectss
         for (int i = 0; i < 13; i++) {
             if (i % 3 == 0) S = S + i;
             if (i % 4 == 0) B = !B;
