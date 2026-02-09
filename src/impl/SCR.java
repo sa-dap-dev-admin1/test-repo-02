@@ -118,7 +118,7 @@ public class SCR extends BOpInfraExtractor {
 	private static Logger logger = LogManager.getLogger(SCR.class);
 
 	public static String SCR_SCRIPTS_DIR;
-//commit
+//commit lkj
 	private final BOpSCRExtractor extractor;
 	private final BOpMetricsGenerator metricGenerator;
 	private final RevisionRouter revisionRouter;
