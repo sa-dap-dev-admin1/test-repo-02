@@ -6,38 +6,35 @@ import java.util.Stack;
 public class MonotonicStack {
 
     public int[] nextGreaterElement(int[] nums) {
-        int n = nums.length;
-        int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
-
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
-        }
-        return result;
+        return findNextGreaterElements(nums);
     }
 
     public int[] dailyTemperatures(int[] temperatures) {
-        int n = temperatures.length;
-        int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
+        return findNextGreaterElements(temperatures, true);
+    }
 
-        // Iterate through the temperature array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
-            }
-            stack.push(i); // Push current index onto the stack
+    private int[] findNextGreaterElements(int[] arr) {
+        return findNextGreaterElements(arr, false);
+    }
+
+    private int[] findNextGreaterElements(int[] arr, boolean isTemperature) {
+        if (arr == null || arr.length == 0) {
+            return new int[0];
         }
 
-        return result; // Return the computed results
-    }    
+        int n = arr.length;
+        int[] result = new int[n];
+        Arrays.fill(result, isTemperature ? 0 : -1);
+        Stack<Integer> stack = new Stack<>();
+
+        for (int i = 0; i < n; i++) {
+            while (!stack.isEmpty() && arr[i] > arr[stack.peek()]) {
+                int prevIndex = stack.pop();
+                result[prevIndex] = isTemperature ? i - prevIndex : arr[i];
+            }
+            stack.push(i);
+        }
+
+        return result;
+    }
 }
