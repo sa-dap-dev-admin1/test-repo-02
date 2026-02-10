@@ -1,5 +1,5 @@
 package patterns.java;
-//comment3f
+//comment3fg
 import java.util.LinkedList;
 import java.util.Queue;
 
