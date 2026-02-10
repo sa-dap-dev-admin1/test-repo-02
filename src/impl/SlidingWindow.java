@@ -3,6 +3,7 @@ package patterns.java;
 import java.util.HashSet;
 
 public class SlidingWindow {
+    // test 2 : Siva
     public double findMaxAverageBruteForce(int[] nums, int k) {
         int n = nums.length;
         double maxAvg = Integer.MIN_VALUE;

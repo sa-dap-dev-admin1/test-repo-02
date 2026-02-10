@@ -6,6 +6,7 @@ import java.util.Stack;
 public class MonotonicStack {
 
     public int[] nextGreaterElement(int[] nums) {
+        // Test 3
         int n = nums.length;
         int[] result = new int[n]; // Output array
         Arrays.fill(result, -1); // Default to -1 if no greater element exists

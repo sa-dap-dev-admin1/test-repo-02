@@ -27,6 +27,7 @@ import java.io.IOException;
 @RestController
 public class JiraController {
 
+  // TEST 4
   @Autowired
   private JiraService jiraService;
 
@@ -46,7 +47,7 @@ public class JiraController {
       Message message;
 
 
-      //convert a multipart file to File. Test 8
+      //convert a multipart file to File.
   
       try {
           String tmpDir = System.getProperty("java.io.tmpdir");

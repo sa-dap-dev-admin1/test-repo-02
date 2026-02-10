@@ -1,6 +1,8 @@
 package patterns.java;
 //commentfg
 public class KadaneAlgorithm {
+    // test 1
+
     public int maxSubArray(int[] nums) {
         int currentSum = nums[0]; // Start with the first element
         int maxSum = nums[0];     // Initialize maxSum with the first element
