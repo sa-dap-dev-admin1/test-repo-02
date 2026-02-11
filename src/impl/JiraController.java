@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 @RestController
 public class JiraController {
@@ -39,40 +40,60 @@ public class JiraController {
   @SkipValidationCheck
   @CSVConverter
   public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
-
+      logger.info("Starting to raise Jira ticket");
       UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
       String csvContents = MultipartUtil.getData(data,null);
       File file = null;
       Message message;
 
-
       //convert a multipart file to File
-  
       try {
-          String tmpDir = System.getProperty("java.io.tmpdir");
-          File dir = new File(tmpDir, UIX_DIR);
-          // empty check here.
-          if(!dir.exists()){
-              dir.mkdir();
-          }
-          // doing null check 
-          if(csvContents != null) {
-              file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId());
-              FileUtils.writeStringToFile(file, csvContents);
-          }
-
-          message = jiraService.raiseTSUP(file);
-
+          File tempDir = createTempDirectory();
+          Optional<File> optionalFile = writeCSVToFile(tempDir, csvContents, userToken);
+          message = handleFileOperations(optionalFile);
       } catch (IOException e) {
-          logger.error("Error in file reading: ",e);
+          logger.error("Error in file operations: ", e);
           throw e;
       }
-         // Testing UAT : 18
-
+      // Testing UAT : 18
       return message;
+  }
 
-
+  private File createTempDirectory() throws IOException {
+      logger.debug("Creating temporary directory");
+      String tmpDir = System.getProperty("java.io.tmpdir");
+      File dir = new File(tmpDir, UIX_DIR);
+      // empty check here.
+      if(!dir.exists() && !dir.mkdir()){
+          throw new IOException("Failed to create directory: " + dir.getAbsolutePath());
       }
+      return dir;
+  }
+
+  private Optional<File> writeCSVToFile(File dir, String csvContents, UserToken userToken) throws IOException {
+      logger.debug("Writing CSV contents to file");
+      // doing null check 
+      if(csvContents == null) {
+          return Optional.empty();
+      }
+      String fileName = createFileName(userToken);
+      File file = new File(dir, fileName);
+      FileUtils.writeStringToFile(file, csvContents);
+      return Optional.of(file);
+  }
+
+  private String createFileName(UserToken userToken) {
+      return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
+  }
+
+  private Message handleFileOperations(Optional<File> file) throws IOException {
+      logger.debug("Handling file operations");
+      if (!file.isPresent()) {
+          logger.warn("No file present to process");
+          return new Message("No file to process");
+      }
+      return jiraService.raiseTSUP(file.get());
+  }
 
   public int maxSubArray(int[] nums) {
     int currentSum = nums[0]; // Start with the first element
@@ -87,5 +108,4 @@ public class JiraController {
     }
     return maxSum;
   }
-
 }
