@@ -23,69 +23,89 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 @RestController
 public class JiraController {
 
-  @Autowired
-  private JiraService jiraService;
+    @Autowired
+    private JiraService jiraService;
 
-  private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
+    private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
     public static final String UIX_DIR = "uix_invalid_csv_files";
+    private static final String FILE_PREFIX = FileSeparator.CSV_SEPARATOR.getName() + "_";
 
-  @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
-  @SkipValidationCheck
-  @CSVConverter
-  public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
+    @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
+    @SkipValidationCheck
+    @CSVConverter
+    public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
+        logger.info("Starting to process Jira ticket request");
+        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String csvContents = MultipartUtil.getData(data, null);
 
-      UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-      String csvContents = MultipartUtil.getData(data,null);
-      File file = null;
-      Message message;
+        if (csvContents == null || csvContents.isEmpty()) {
+            logger.error("CSV contents are empty or null");
+            throw new IllegalArgumentException("CSV contents cannot be empty or null");
+        }
 
+        Optional<File> file = createTemporaryFile(csvContents, userToken.getUserId());
+        
+        if (!file.isPresent()) {
+            logger.error("Failed to create temporary file");
+            throw new IOException("Failed to create temporary file");
+        }
 
-      //convert a multipart file to File. Test 9
-  
-      try {
-          String tmpDir = System.getProperty("java.io.tmpdir");
-          File dir = new File(tmpDir, UIX_DIR);
-          // empty check here.
-          if(!dir.exists()){
-              dir.mkdir();
-          }
-          // doing null check 
-          if(csvContents != null) {
-              file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId());
-              FileUtils.writeStringToFile(file, csvContents);
-          }
-
-          message = jiraService.raiseTSUP(file);
-
-      } catch (IOException e) {
-          logger.error("Error in file reading: ",e);
-          throw e;
-      }
-
-
-      return message;
-
-
-      }
-
-  public int maxSubArray(int[] nums) {
-    int currentSum = nums[0]; // Start with the first element
-    int maxSum = nums[0];     // Initialize maxSum with the first element
-
-    // Traverse the array from the second element
-    for (int i = 1; i < nums.length; i++) {
-      // If currentSum is negative, reset to current element
-      currentSum = Math.max(nums[i], currentSum + nums[i]);
-      // Update maxSum if currentSum is greater
-      maxSum = Math.max(maxSum, currentSum);
+        try {
+            Message message = jiraService.raiseTSUP(file.get());
+            logger.info("Successfully processed Jira ticket request");
+            return message;
+        } catch (IOException e) {
+            logger.error("Error in processing Jira ticket: ", e);
+            throw e;
+        } finally {
+            if (file.isPresent()) {
+                boolean deleted = file.get().delete();
+                if (!deleted) {
+                    logger.warn("Failed to delete temporary file: {}", file.get().getAbsolutePath());
+                }
+            }
+        }
     }
-    return maxSum;
-  }
 
+    private Optional<File> createTemporaryFile(String csvContents, String userId) {
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        File dir = new File(tmpDir, UIX_DIR);
+        
+        if (!dir.exists() && !dir.mkdir()) {
+            logger.error("Failed to create directory: {}", dir.getAbsolutePath());
+            return Optional.empty();
+        }
+
+        File file = new File(dir, FILE_PREFIX + System.currentTimeMillis() + "X" + userId);
+        
+        try {
+            FileUtils.writeStringToFile(file, csvContents);
+            logger.info("Temporary file created: {}", file.getAbsolutePath());
+            return Optional.of(file);
+        } catch (IOException e) {
+            logger.error("Error writing to file: ", e);
+            return Optional.empty();
+        }
+    }
+
+    public int maxSubArray(int[] nums) {
+        int currentSum = nums[0]; // Start with the first element
+        int maxSum = nums[0];     // Initialize maxSum with the first element
+
+        // Traverse the array from the second element
+        for (int i = 1; i < nums.length; i++) {
+            // If currentSum is negative, reset to current element
+            currentSum = Math.max(nums[i], currentSum + nums[i]);
+            // Update maxSum if currentSum is greater
+            maxSum = Math.max(maxSum, currentSum);
+        }
+        return maxSum;
+    }
 }
