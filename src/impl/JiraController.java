@@ -23,6 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 public class JiraController {
@@ -45,34 +48,59 @@ public class JiraController {
       File file = null;
       Message message;
 
-
       //convert a multipart file to File
-  
       try {
-          String tmpDir = System.getProperty("java.io.tmpdir");
-          File dir = new File(tmpDir, UIX_DIR);
-          // empty check here.
-          if(!dir.exists()){
-              dir.mkdir();
-          }
-          // doing null check 
-          if(csvContents != null) {
-              file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId());
-              FileUtils.writeStringToFile(file, csvContents);
-          }
-
-          message = jiraService.raiseTSUP(file);
-
+          file = createCSVFile(csvContents, userToken.getUserId());
+          message = createJiraTicket(file);
       } catch (IOException e) {
           logger.error("Error in file reading: ",e);
           throw e;
       }
-         // Testing UAT : 21
+      // Testing UAT : 20
 
       return message;
+  }
 
-
+  private File createCSVFile(String csvContents, long userId) throws IOException {
+      if(csvContents == null || csvContents.isEmpty()) {
+          throw new IllegalArgumentException("CSV contents cannot be null or empty");
       }
+
+      Path dir = createAndGetDirectory();
+      String fileName = FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userId;
+      Path filePath = dir.resolve(fileName);
+
+      try {
+          return Files.write(filePath, csvContents.getBytes()).toFile();
+      } catch (IOException e) {
+          logger.error("Error in file handling: ", e);
+          throw e;
+      }
+  }
+
+  private Path createAndGetDirectory() throws IOException {
+      String tmpDir = System.getProperty("java.io.tmpdir");
+      Path dir = Paths.get(tmpDir, UIX_DIR);
+      // empty check here.
+      if(!Files.exists(dir)){
+          try {
+              Files.createDirectories(dir);
+          } catch (IOException e) {
+              logger.error("Error creating directory: ", e);
+              throw e;
+          }
+      }
+      return dir;
+  }
+
+  private Message createJiraTicket(File file) {
+      try {
+          return jiraService.raiseTSUP(file);
+      } catch (Exception e) {
+          logger.error("Error creating Jira ticket: ", e);
+          throw new RuntimeException("Failed to create Jira ticket", e);
+      }
+  }
 
   public int maxSubArray(int[] nums) {
     int currentSum = nums[0]; // Start with the first element
@@ -87,5 +115,4 @@ public class JiraController {
     }
     return maxSum;
   }
-
 }
