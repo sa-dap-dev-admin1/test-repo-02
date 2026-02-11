@@ -23,7 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @RestController
 public class JiraController {
@@ -34,7 +35,6 @@ public class JiraController {
     private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
     public static final String UIX_DIR = "uix_invalid_csv_files";
-    private static final String TMP_DIR = "java.io.tmpdir";
 
     @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
@@ -45,45 +45,48 @@ public class JiraController {
         String csvContents = MultipartUtil.getData(data, null);
 
         try {
-            Optional<File> fileOptional = createFileFromCSV(csvContents, userToken.getUserId());
-            return fileOptional.map(this::processJiraTicket)
-                    .orElseThrow(() -> new IOException("Failed to create file from CSV contents"));
+            File tempDir = createTempDirectory();
+            File csvFile = writeCSVToFile(csvContents, tempDir, userToken.getUserId());
+            return handleJiraTicketCreation(csvFile);
         } catch (IOException e) {
             logger.error("Error in file processing: ", e);
             throw e;
         }
     }
 
-    private Optional<File> createFileFromCSV(String csvContents, String userId) throws IOException {
-        if (csvContents == null) {
-            return Optional.empty();
-        }
-
-        File dir = createDirectoryIfNotExists();
-        File file = new File(dir, generateFileName(userId));
-        FileUtils.writeStringToFile(file, csvContents);
-        return Optional.of(file);
+    private File createTempDirectory() throws IOException {
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        Path dirPath = Path.of(tmpDir, UIX_DIR);
+        return Files.createDirectories(dirPath).toFile();
     }
 
-    private File createDirectoryIfNotExists() {
-        String tmpDir = System.getProperty(TMP_DIR);
-        File dir = new File(tmpDir, UIX_DIR);
-        if (!dir.exists()) {
-            dir.mkdir();
+    private File writeCSVToFile(String csvContents, File dir, String userId) throws IOException {
+        if (csvContents == null) {
+            throw new IllegalArgumentException("CSV contents cannot be null");
         }
-        return dir;
+
+        String fileName = generateFileName(userId);
+        File file = new File(dir, fileName);
+
+        try {
+            FileUtils.writeStringToFile(file, csvContents);
+            return file;
+        } catch (IOException e) {
+            logger.error("Error writing CSV to file: ", e);
+            throw e;
+        }
     }
 
     private String generateFileName(String userId) {
         return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userId;
     }
 
-    private Message processJiraTicket(File file) {
+    private Message handleJiraTicketCreation(File file) {
         try {
             return jiraService.raiseTSUP(file);
         } catch (Exception e) {
-            logger.error("Error raising TSUP: ", e);
-            return new Message("Failed to raise Jira ticket");
+            logger.error("Error raising TSUP ticket: ", e);
+            throw new RuntimeException("Failed to raise Jira ticket", e);
         }
     }
 
