@@ -67,7 +67,7 @@ public class JiraController {
           logger.error("Error in file reading: ",e);
           throw e;
       }
-         // Testing UAT : 6
+         // Testing UAT : 7
 
       return message;
 
