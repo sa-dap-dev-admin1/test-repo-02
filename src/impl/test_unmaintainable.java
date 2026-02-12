@@ -96,13 +96,13 @@ public class OrderProcessorBad {
             }
         }
 
-        // poor exception handling, swallowing errors
+        // poor exception handling, swallowing errorsd
         try {
             if (grand > 9999999) {
                 throw new RuntimeException("Too big");
             }
         } catch (Exception e) {
-            // ignorehjff
+            // ignorehjffdj
         }
 
         // duplicated computation (again)gf
