@@ -88,4 +88,20 @@ public class JiraController {
     return maxSum;
   }
 
+    private static void validateConfigField(String reqId,Map<String, Object> config, String fieldName)
+      throws FatalPluginProcessingException {
+     Long field = getLongFromConfig(config, fieldName);
+     if(field==null){
+       logger.error("Field {} not found in config for reqId {}", fieldName, reqId);
+       throw new FatalPluginProcessingException(PluginProcessingErrorCode.REQUEST_CONFIG_MISSING);
+     }
+  }
+
+  public static int fileCountInPR(PrProcessingContext filesForAF){
+    if(filesForAF==null || filesForAF.getFilesForProcessing() == null ||  filesForAF.getFilesForProcessing().isEmpty()){
+      return 0;
+    }
+    return filesForAF.getFilesForProcessing().size();
+  }
+
 }
