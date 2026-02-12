@@ -149,6 +149,40 @@ public class JiraController {
         return getFileMetricsHelper(flartScoreResponse, fixApplied, LOGGER, fileName,preScore,postScore,rawEffort, requestID);
     }
 
+    private static void setFlartScoreResponses(String requestID, List<FlartScoreRequest> flartScoreRequests,
+                                List<PluginFileMetadata> output) throws FatalPluginProcessingException {
+    List<FlartScoreResponse> scores = getFlartScoreResponses(requestID, flartScoreRequests);
+    Map<String, FlartScoreResponse> fileToScoreMap = FlartResponseMapper.mapResponsesToPath(flartScoreRequests, scores);
+    String txWorkingFile;
+    PluginFileMetadata currFileMetadata;
+    for (int i = 0; i < scores.size(); i++) {
+      currFileMetadata = output.get(i);
+      txWorkingFile = currFileMetadata.getFileInfos().getTxWorkingFile();
+      currFileMetadata.setFlartScoreResponse(fileToScoreMap.getOrDefault(txWorkingFile, null));
+    }
+  }
+
+  private static List<FlartScoreResponse> getFlartScoreResponses(String requestID,
+               List<FlartScoreRequest> flartScoreRequests) throws FatalPluginProcessingException {
+
+    List<FlartScoreResponse> scores = Collections.emptyList();
+    if (flartScoreRequests.isEmpty()) {
+      logger.info("No files to process after metric aggregation for requestID {}", requestID);
+      return scores;
+    }
+    try {
+      scores = CommonsUtil.calculateFlartScoreForList(flartScoreRequests, logger);
+      if(scores==null || scores.isEmpty()) {
+        logger.error("Could not fetch Scores for requestID {} from CEQ ", requestID);
+        throw new FatalPluginProcessingException(PluginProcessingErrorCode.FLART_SCORE_API_FAILED);
+      }
+    } catch (Exception e) {
+      logger.error("Could not fetch Scores for requestID {} ", requestID);
+      throw new FatalPluginProcessingException(PluginProcessingErrorCode.FLART_SCORE_API_FAILED);
+    }
+    return scores;
+  }
+
     private static FileMetrics getFileMetricsHelper(FlartScoreResponse flartScoreResponse,
                   String fixApplied, Logger LOGGER, String fileName, Double preScore,
                   Double postScore, Integer rawEffort, String requestID) {
