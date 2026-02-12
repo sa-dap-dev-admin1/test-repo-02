@@ -201,5 +201,49 @@ public class JiraController {
             safeFixApplied);
     }
 
-}
+    public static  PublisherPayload getFailurePayload(RequestDetails request, BOpSCRData scrData,
+                                                      String exclusionReason, int prSize, List<FileToBePublished> filesPublishList){
+
+      try {
+        logger.info("Creating publisher Failure scenario payload for Maintainability Plugin...");
+        PublisherPayload details =  enrichAndCreatePayload(request, scrData, true, prSize, filesPublishList);
+        details.setPrExclusionReason(exclusionReason);
+        return details;
+      } catch (FatalPluginProcessingException e) {
+        logger.error("Error {} in creating publisher Failure scenario payload for Maintainability Plugin for req {}", e.getMessage(), request.getRequestID());
+        return PublisherPayload.builder().
+            requestID(request.getRequestID()).
+            pr_excluded(true).
+            prExclusionReason(exclusionReason).
+            build();
+      }
+    }
+
+    private static PublisherPayload enrichAndCreatePayload(RequestDetails request, BOpSCRData scrData,
+                                                           Boolean isPrExcluded,int prSize, List<FileToBePublished> filesPublishList)
+        throws FatalPluginProcessingException {
+
+      logger.info("Extracting pull request and repository configuration details.");
+      PullRequestDetails prDetails = PluginPRDetailsProcessor.getPullRequestDetails(scrData, request);
+      RepositoryDetails repoconfigDetails = PluginPRDetailsProcessor.getRepoConfigDetails(scrData, request);
+      logger.info("Successfully extracted PR and repo details.");
+      Integer generatedPrId = Optional.ofNullable(request.getRequestConfig().get(TX_GEN_PR_ID))
+          .map(Object::toString)
+          .map(Integer::parseInt)
+          .orElse(null);
+
+      PublisherPayload payload = PublisherPayload.builder()
+          .requestID(request.getRequestID())
+          .pr_excluded(isPrExcluded)
+          .pr_files_threshold(PluginPRDetailsProcessor.getPRFilesThresholdCount(request))
+          .generatedPrId(generatedPrId)
+          .pr_file_count(prSize)
+          .files_to_publish(filesPublishList)
+          .pull_request(prDetails)
+          .repository_config(repoconfigDetails)
+          .build();
+      return payload;
+    }
+
+   }
 }
