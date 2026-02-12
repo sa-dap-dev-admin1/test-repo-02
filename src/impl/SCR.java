@@ -1064,6 +1064,39 @@ public class SCR extends BOpInfraExtractor {
 		return revisionRouter;
 	}
 
+	 private static String getInstallationToken(RequestDetails request, Long entID, Long installID)
+                                                            throws FatalPluginProcessingException {
+    String authToken = null;
+    if (entID == null ||installID == null ) {
+      logger.error("Skipping auth token generation for ReqID {}. Missing required IDs (EntID: {}, InstallID: {})",
+          request.getRequestID(), entID, installID);
+      throw new FatalPluginProcessingException(PluginProcessingErrorCode.APP_ENT_ID_MISSING);
+    }
+    logger.info("Fetching authToken for Maintainability Plugin for ReqID {}", request.getRequestID());
+    try {
+      authToken = CommonsUtil.getMaAppInstallationToken(entID, installID, request.getInfraDetails(), logger);
+    } catch (Exception e) {
+      throw new FatalPluginProcessingException(PluginProcessingErrorCode.AUTH_TOKEN_GENERATION_FAILED);
+    }
+    logger.info("Successfully fetched Maintainability Plugin auth token.");
+    return authToken;
+  }
+
+	  private static void validateConfigField(String reqId,Map<String, Object> config, String fieldName)
+      throws FatalPluginProcessingException {
+     Long field = getLongFromConfig(config, fieldName);
+     if(field==null){
+       logger.error("Field {} not found in config for reqId {}", fieldName, reqId);
+       throw new FatalPluginProcessingException(PluginProcessingErrorCode.REQUEST_CONFIG_MISSING);
+     }
+  }
+
+  public static int fileCountInPR(PrProcessingContext filesForAF){
+    if(filesForAF==null || filesForAF.getFilesForProcessing() == null ||  filesForAF.getFilesForProcessing().isEmpty()){
+      return 0;
+    }
+    return filesForAF.getFilesForProcessing().size();
+  }
 
 
 }
