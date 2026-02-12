@@ -1,5 +1,5 @@
 package patterns.java;
-//commentfgbj
+//commentfgbjd
 import java.util.HashSet;
 
 public class FastAndSlowPointers {
