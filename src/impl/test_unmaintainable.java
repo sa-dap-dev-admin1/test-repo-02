@@ -102,7 +102,7 @@ public class OrderProcessorBad {
                 throw new RuntimeException("Too big");
             }
         } catch (Exception e) {
-            // ignorehjffd
+            // ignorehjffdj
         }
 
         // duplicated computation (again)gf
