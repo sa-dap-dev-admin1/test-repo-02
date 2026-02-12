@@ -96,7 +96,7 @@ public class OrderProcessorBad {
             }
         }
 
-        // poor exception handling, swallowing errorsd
+        // poor exception handling, swallowing errorsdf
         try {
             if (grand > 9999999) {
                 throw new RuntimeException("Too big");
