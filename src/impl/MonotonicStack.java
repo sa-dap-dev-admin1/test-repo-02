@@ -4,11 +4,13 @@ import java.util.Arrays;
 import java.util.Stack;
 //test 2345fhdffff
 public class MonotonicStack {
+    private static final int NO_GREATER_ELEMENT = -1;
+    private static final int DEFAULT_WAIT_TIME = 0;
 
     public int[] nextGreaterElement(int[] nums) {
         int n = nums.length;
         int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
+        Arrays.fill(result, NO_GREATER_ELEMENT); // Default to -1 if no greater element exists
         Stack<Integer> stack = new Stack<>(); // Stack stores indices
 
         // Iterate through the array
@@ -39,5 +41,13 @@ public class MonotonicStack {
         }
 
         return result; // Return the computed results
-    }    
+    }
+
+    private void updateStack(int[] values, int[] result, Stack<Integer> stack, int currentIndex) {
+        while (!stack.isEmpty() && values[currentIndex] > values[stack.peek()]) {
+            int topIndex = stack.pop();
+            result[topIndex] = currentIndex - topIndex;
+        }
+        stack.push(currentIndex);
+    }
 }
