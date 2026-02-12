@@ -4,40 +4,44 @@ import java.util.Arrays;
 import java.util.Stack;
 //test 234
 public class MonotonicStack {
+    private static final int DEFAULT_VALUE = -1;
 
     public int[] nextGreaterElement(int[] nums) {
-        int n = nums.length;
-        int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
-
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
-        }
-        return result;
+        int[] result = new int[nums.length]; // Output array
+        Arrays.fill(result, DEFAULT_VALUE); // Default to -1 if no greater element exists
+        return processMonotonicStack(nums, result, (current, top) -> current > top);
     }
 
     public int[] dailyTemperatures(int[] temperatures) {
-        int n = temperatures.length;
-        int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
+        int[] result = new int[temperatures.length]; // Result array initialized with 0s
+        return processMonotonicStack(temperatures, result, (current, top) -> current > top);
+    }
 
-        // Iterate through the temperature array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
-            }
-            stack.push(i); // Push current index onto the stack
+    // Helper method to process monotonic stack
+    private int[] processMonotonicStack(int[] array, int[] result, Comparator comparator) {
+        Stack<Integer> stack = new Stack<>(); // Stack stores indices
+        
+        // Iterate through the array
+        for (int i = 0; i < array.length; i++) {
+            updateStack(array, result, stack, i, comparator);
+            stack.push(i); // Push the current index onto the stack
         }
+        
+        return result;
+    }
 
-        return result; // Return the computed results
-    }    
+    // Helper method to update the stack and result array
+    private void updateStack(int[] array, int[] result, Stack<Integer> stack, int currentIndex, Comparator comparator) {
+        // While stack is not empty and current element satisfies the comparison condition
+        while (!stack.isEmpty() && comparator.compare(array[currentIndex], array[stack.peek()])) {
+            int prevIndex = stack.pop(); // Pop the top element
+            result[prevIndex] = currentIndex - prevIndex; // Calculate the result
+        }
+    }
+
+    // Functional interface for comparison
+    @FunctionalInterface
+    private interface Comparator {
+        boolean compare(int current, int top);
+    }
 }
