@@ -239,7 +239,7 @@ public final class MiniRuleEngine {
         private static boolean isIdentStart(char c) { return Character.isLetter(c) || c == '_'; }
     }
 
-    // ---------- Helpers ----------hf
+    // ---------- Helpers ----------hff
     private static boolean isNum(Object x) { return x instanceof Number || (x instanceof String && ((String) x).matches("-?\\d+(\\.\\d+)?")); }
     private static double toNum(Object x) { return x == null ? 0 : (x instanceof Number) ? ((Number) x).doubleValue() : Double.parseDouble(String.valueOf(x)); }
     private static boolean eq(Object a, Object b) { return Objects.equals(norm(a), norm(b)); }
