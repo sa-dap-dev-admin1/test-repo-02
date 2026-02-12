@@ -1,5 +1,5 @@
 package com.blueoptima.uix.controller;
-//test 2334y
+
 import com.blueoptima.iam.dto.PermissionsCode;
 import com.blueoptima.uix.SkipValidationCheck;
 import com.blueoptima.uix.annotations.CSVConverter;
@@ -23,69 +23,84 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 @RestController
 public class JiraController {
 
-  @Autowired
-  private JiraService jiraService;
+    private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
+    private static final String UIX_DIR = "uix_invalid_csv_files";
+    private static final String TMP_DIR_PROPERTY = "java.io.tmpdir";
+    private static final String FILE_NAME_SEPARATOR = "X";
 
-  private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
+    @Autowired
+    private JiraService jiraService;
 
-    public static final String UIX_DIR = "uix_invalid_csv_files";
+    @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
+    @SkipValidationCheck
+    @CSVConverter
+    public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
+        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String csvContents = MultipartUtil.getData(data, null);
 
-  @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
-  @SkipValidationCheck
-  @CSVConverter
-  public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
+        // Create temporary directory
+        File dir = createTempDirectory();
 
-      UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-      String csvContents = MultipartUtil.getData(data,null);
-      File file = null;
-      Message message;
+        // Write CSV contents to file
+        Optional<File> fileOptional = writeCSVToFile(csvContents, dir, userToken);
 
-
-      //convert a multipart file to File. Test 8
-  
-      try {
-          String tmpDir = System.getProperty("java.io.tmpdir");
-          File dir = new File(tmpDir, UIX_DIR);
-          // empty check here.
-          if(!dir.exists()){
-              dir.mkdir();
-          }
-          // doing null check 
-          if(csvContents != null) {
-              file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId());
-              FileUtils.writeStringToFile(file, csvContents);
-          }
-
-          message = jiraService.raiseTSUP(file);
-
-      } catch (IOException e) {
-          logger.error("Error in file reading: ",e);
-          throw e;
-      }
-
-
-      return message;
-
-
-      }
-
-  public int maxSubArray(int[] nums) {
-    int currentSum = nums[0]; // Start with the first element
-    int maxSum = nums[0];     // Initialize maxSum with the first element
-
-    // Traverse the array from the second element
-    for (int i = 1; i < nums.length; i++) {
-      // If currentSum is negative, reset to current element
-      currentSum = Math.max(nums[i], currentSum + nums[i]);
-      // Update maxSum if currentSum is greater
-      maxSum = Math.max(maxSum, currentSum);
+        // Handle Jira ticket creation
+        return handleJiraTicketCreation(fileOptional.orElse(null));
     }
-    return maxSum;
-  }
 
+    private File createTempDirectory() {
+        String tmpDir = System.getProperty(TMP_DIR_PROPERTY);
+        File dir = new File(tmpDir, UIX_DIR);
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+        return dir;
+    }
+
+    private Optional<File> writeCSVToFile(String csvContents, File dir, UserToken userToken) throws IOException {
+        if (csvContents == null) {
+            return Optional.empty();
+        }
+
+        File file = createFile(dir, FileSeparator.CSV_SEPARATOR.getName(), userToken);
+        try {
+            FileUtils.writeStringToFile(file, csvContents);
+            return Optional.of(file);
+        } catch (IOException e) {
+            logger.error("Error writing CSV contents to file: ", e);
+            throw e;
+        }
+    }
+
+    private File createFile(File dir, String prefix, UserToken userToken) {
+        return new File(dir, prefix + "_" + System.currentTimeMillis() + FILE_NAME_SEPARATOR + userToken.getUserId());
+    }
+
+    private Message handleJiraTicketCreation(File file) throws IOException {
+        try {
+            return jiraService.raiseTSUP(file);
+        } catch (IOException e) {
+            logger.error("Error in file reading: ", e);
+            throw e;
+        }
+    }
+
+    // This method seems unrelated to the main functionality of this controller.
+    // Consider moving it to a separate utility class.
+    public int maxSubArray(int[] nums) {
+        int currentSum = nums[0];
+        int maxSum = nums[0];
+
+        for (int i = 1; i < nums.length; i++) {
+            currentSum = Math.max(nums[i], currentSum + nums[i]);
+            maxSum = Math.max(maxSum, currentSum);
+        }
+        return maxSum;
+    }
 }
