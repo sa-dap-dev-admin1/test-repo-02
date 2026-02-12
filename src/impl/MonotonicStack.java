@@ -2,42 +2,72 @@ package patterns.java;
 
 import java.util.Arrays;
 import java.util.Stack;
-//test 2345
+
+/**
+ * Implements monotonic stack operations for various array problems.
+ */
 public class MonotonicStack {
 
+    /**
+     * Finds the next greater element for each element in the input array.
+     *
+     * @param nums the input array
+     * @return an array where each element is the next greater element in the original array,
+     *         or -1 if no such element exists
+     * @throws IllegalArgumentException if the input array is null or empty
+     */
     public int[] nextGreaterElement(int[] nums) {
-        int n = nums.length;
-        int[] result = new int[n]; // Output array
-        Arrays.fill(result, -1); // Default to -1 if no greater element exists
-        Stack<Integer> stack = new Stack<>(); // Stack stores indices
-
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty and current element is greater than stack top
-            while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-                int index = stack.pop(); // Pop the top element
-                result[index] = nums[i]; // The current element is the Next Greater Element
-            }
-            stack.push(i); // Push the current index onto the stack
+        if (nums == null || nums.length == 0) {
+            throw new IllegalArgumentException("Input array must not be null or empty");
         }
+
+        int n = nums.length;
+        int[] result = new int[n];
+        Arrays.fill(result, -1);
+        Stack<Integer> stack = new Stack<>();
+
+        for (int i = 0; i < n; i++) {
+            processStack(stack, nums, result, i, (current, top) -> current > top);
+        }
+
         return result;
     }
 
+    /**
+     * Calculates the number of days to wait for a warmer temperature.
+     *
+     * @param temperatures the input array of daily temperatures
+     * @return an array where each element is the number of days to wait for a warmer temperature,
+     *         or 0 if no such day exists
+     * @throws IllegalArgumentException if the input array is null or empty
+     */
     public int[] dailyTemperatures(int[] temperatures) {
-        int n = temperatures.length;
-        int[] result = new int[n]; // Result array initialized with 0s
-        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
-
-        // Iterate through the temperature array
-        for (int i = 0; i < n; i++) {
-            // While stack is not empty AND the current temperature is warmer than the temperature at stack top
-            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-                int prevIndex = stack.pop(); // Pop the previous day's index
-                result[prevIndex] = i - prevIndex; // Calculate the wait time
-            }
-            stack.push(i); // Push current index onto the stack
+        if (temperatures == null || temperatures.length == 0) {
+            throw new IllegalArgumentException("Input array must not be null or empty");
         }
 
-        return result; // Return the computed results
-    }    
+        int n = temperatures.length;
+        int[] result = new int[n];
+        Stack<Integer> stack = new Stack<>();
+
+        for (int i = 0; i < n; i++) {
+            processStack(stack, temperatures, result, i, (current, top) -> current > top);
+        }
+
+        return result;
+    }
+
+    private void processStack(Stack<Integer> stack, int[] array, int[] result, int currentIndex,
+                              StackCondition condition) {
+        while (!stack.isEmpty() && condition.test(array[currentIndex], array[stack.peek()])) {
+            int prevIndex = stack.pop();
+            result[prevIndex] = currentIndex - prevIndex;
+        }
+        stack.push(currentIndex);
+    }
+
+    @FunctionalInterface
+    private interface StackCondition {
+        boolean test(int current, int top);
+    }
 }
