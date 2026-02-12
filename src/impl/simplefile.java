@@ -84,7 +84,7 @@ public class Demo {
             System.out.println();
         }
 
-        // Some extra "complex" post-processing: group by plan and compute avg scoreg
+        // Some extra "complex" post-processing: group by plan and compute avg scoregr
         Map<String, List<Double>> byPlan = new HashMap<>();
         for (MiniRuleEngine.Ctx c : cases) {
             String plan = String.valueOf(c.get("plan"));

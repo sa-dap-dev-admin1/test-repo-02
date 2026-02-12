@@ -105,7 +105,7 @@ public class OrderProcessorBad {
             // ignore
         }
 
-        // duplicated computation (again)g
+        // duplicated computation (again)gr
         double rawTotal = 0;
         for (int i = 0; i < os.size(); i++) {
             Map<String, Object> o = os.get(i);
