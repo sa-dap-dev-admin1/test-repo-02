@@ -88,22 +88,6 @@ public class JiraController {
     return maxSum;
   }
 
-    private static void validateConfigField(String reqId,Map<String, Object> config, String fieldName)
-      throws FatalPluginProcessingException {
-     Long field = getLongFromConfig(config, fieldName);
-     if(field==null){
-       logger.error("Field {} not found in config for reqId {}", fieldName, reqId);
-       throw new FatalPluginProcessingException(PluginProcessingErrorCode.REQUEST_CONFIG_MISSING);
-     }
-  }
-
-  public static int fileCountInPR(PrProcessingContext filesForAF){
-    if(filesForAF==null || filesForAF.getFilesForProcessing() == null ||  filesForAF.getFilesForProcessing().isEmpty()){
-      return 0;
-    }
-    return filesForAF.getFilesForProcessing().size();
-  }
-
 
   public class FileMetrics {
 
@@ -218,32 +202,4 @@ public class JiraController {
             build();
       }
     }
-
-    private static PublisherPayload enrichAndCreatePayload(RequestDetails request, BOpSCRData scrData,
-                                                           Boolean isPrExcluded,int prSize, List<FileToBePublished> filesPublishList)
-        throws FatalPluginProcessingException {
-
-      logger.info("Extracting pull request and repository configuration details.");
-      PullRequestDetails prDetails = PluginPRDetailsProcessor.getPullRequestDetails(scrData, request);
-      RepositoryDetails repoconfigDetails = PluginPRDetailsProcessor.getRepoConfigDetails(scrData, request);
-      logger.info("Successfully extracted PR and repo details.");
-      Integer generatedPrId = Optional.ofNullable(request.getRequestConfig().get(TX_GEN_PR_ID))
-          .map(Object::toString)
-          .map(Integer::parseInt)
-          .orElse(null);
-
-      PublisherPayload payload = PublisherPayload.builder()
-          .requestID(request.getRequestID())
-          .pr_excluded(isPrExcluded)
-          .pr_files_threshold(PluginPRDetailsProcessor.getPRFilesThresholdCount(request))
-          .generatedPrId(generatedPrId)
-          .pr_file_count(prSize)
-          .files_to_publish(filesPublishList)
-          .pull_request(prDetails)
-          .repository_config(repoconfigDetails)
-          .build();
-      return payload;
-    }
-
-   }
 }
