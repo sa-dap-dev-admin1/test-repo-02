@@ -671,7 +671,7 @@ public class GenAiDaoImpl implements GenAiDao {
 
         return monthlyRollouts;
     }
-
+ 
     public List<Metric> getBceMetricsTrend(Long enterpriseId, Integer userId, Boolean isSuperUser, GenAIFilterInfo request,
         Map<String, List<Integer>> devLicenseStats, boolean includeEnterpriseAvg, String startMonth, String endMonth, List<OverviewChartGroup> group, boolean isMonthlyTrend, boolean isGroupingCountries){
 
