@@ -77,7 +77,7 @@ public class JiraController {
   public int maxSubArray(int[] nums) {
     int currentSum = nums[0]; // Start with the first element
     int maxSum = nums[0];     // Initialize maxSum with the first element
-
+//comment added
     // Traverse the array from the second element
     for (int i = 1; i < nums.length; i++) {
       // If currentSum is negative, reset to current element
