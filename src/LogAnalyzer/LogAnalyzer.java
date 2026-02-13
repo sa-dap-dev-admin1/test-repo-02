@@ -11,7 +11,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class LogAnalyzer {
 
@@ -24,8 +23,8 @@ public class LogAnalyzer {
     // --- KEYWORDS ---
     private static final String MSG_START = "messagePattern=Starting AutoFix data generation";
     private static final String MSG_ERROR = "messagePattern=Error in getting Single file autofix generation";
-    private static final String MSG_END_WITH_ERROR = "How-To-Fix payload created"; // Explicit ID -> High Confidence
-    private static final String MSG_END_SUCCESS = "messagePattern=Autofix process completed successfully"; // No ID -> Thread/FIFO Check
+    private static final String MSG_END_WITH_ERROR = "How-To-Fix payload created";
+    private static final String MSG_END_SUCCESS = "messagePattern=Autofix process completed successfully";
 
     public static void main(String[] args) {
         String userHome = System.getProperty("user.home");
@@ -34,7 +33,7 @@ public class LogAnalyzer {
         if (args.length > 0) logPath = Paths.get(args[0]);
 
         System.out.println("==================================================");
-        System.out.println("LOG ANALYZER v6.0 (Confidence Levels)");
+        System.out.println("LOG ANALYZER v11.0 (Summary First)");
         System.out.println("Scanning directory: " + logPath.toAbsolutePath());
         System.out.println("==================================================");
 
@@ -51,7 +50,7 @@ public class LogAnalyzer {
     }
 
     private static void analyzeDirectory(Path startPath) throws IOException {
-        // 1. Collect all log files
+        // 1. COLLECT FILES
         List<Path> logFiles = new ArrayList<>();
         Files.walkFileTree(startPath, new SimpleFileVisitor<Path>() {
             @Override
@@ -64,7 +63,6 @@ public class LogAnalyzer {
         });
 
         // 2. SORT FILES (Pivot Logic)
-        // Regex to find the pattern .DD-N (e.g., .27-1 or .01-1) anywhere in the name
         Pattern datePattern = Pattern.compile("\\.(\\d{2})-(\\d+)");
 
         Collections.sort(logFiles, new Comparator<Path>() {
@@ -73,55 +71,32 @@ public class LogAnalyzer {
                 String n1 = p1.getFileName().toString();
                 String n2 = p2.getFileName().toString();
 
-                // Active log always comes last
-                boolean isMain1 = n1.equals("integrator-server.log");
-                boolean isMain2 = n2.equals("integrator-server.log");
-                if (isMain1 && !isMain2) return 1;
-                if (!isMain1 && isMain2) return -1;
-                if (isMain1 && isMain2) return 0;
+                if (n1.equals("integrator-server.log")) return 1;
+                if (n2.equals("integrator-server.log")) return -1;
 
                 int score1 = getChronologicalScore(n1);
                 int score2 = getChronologicalScore(n2);
 
-                if (score1 != score2) {
-                    return Integer.compare(score1, score2);
-                }
-                return n1.compareTo(n2); // Fallback to name if scores identical
+                if (score1 != score2) return Integer.compare(score1, score2);
+                return n1.compareTo(n2);
             }
 
-            // Helper to calculate a sortable score
             private int getChronologicalScore(String filename) {
                 Matcher m = datePattern.matcher(filename);
                 if (m.find()) {
                     try {
                         int day = Integer.parseInt(m.group(1));
                         int rotation = Integer.parseInt(m.group(2));
-
-                        // PIVOT LOGIC:
-                        // If Day > 20, we assume it's the Previous Month (Score = Day)
-                        // If Day <= 20, we assume it's the Current Month (Score = Day + 100)
-                        // Example: 27 -> 27.   01 -> 101.   13 -> 113.
-                        // Result: 27 comes before 01 and 13.
                         int monthOffset = (day > 20) ? 0 : 100;
-
-                        // Combine into a single number: MMMRR (MonthOffset + Rotation)
-                        // We prioritize Month/Day first, then rotation index.
-                        // Actually, day is enough for the main sort.
                         return (monthOffset + day) * 100 + rotation;
-                    } catch (NumberFormatException e) {
-                        return 999999; // Put parse errors at the end
-                    }
+                    } catch (Exception e) { return 999999; }
                 }
-                return 999999; // No date found
+                return 999999;
             }
         });
 
         System.out.println("[INFO] Processing " + logFiles.size() + " files.");
-        System.out.println("[INFO] First 5 files: " + logFiles.stream().limit(5).map(p -> p.getFileName().toString()).collect(Collectors.joining(", ")));
-        System.out.println("[INFO] Last 5 files: " + logFiles.stream().skip(Math.max(0, logFiles.size() - 5)).map(p -> p.getFileName().toString()).collect(
-            Collectors.joining(", ")));
 
-        // 3. PROCESS
         Map<String, RequestData> allRequests = new HashMap<>();
         Map<String, String> threadToRequestMap = new HashMap<>();
         LinkedList<String> pendingQueue = new LinkedList<>();
@@ -162,7 +137,6 @@ public class LogAnalyzer {
             return;
         }
 
-        // --- EXTRACT ARGS ---
         String argsContent = null;
         int startIdx = message.indexOf("stringArgs=[");
         if (startIdx != -1) {
@@ -175,21 +149,25 @@ public class LogAnalyzer {
         // 1. L1: START
         if (message.contains(MSG_START) && argsContent != null) {
             String requestId = argsContent.trim();
+            if (requestId.endsWith("]")) requestId = requestId.substring(0, requestId.length() - 1);
+            if (requestId.startsWith("[")) requestId = requestId.substring(1);
             if (requestId.contains(",")) requestId = requestId.split(",")[0].trim();
+            requestId = requestId.trim();
 
             RequestData data = allRequests.getOrDefault(requestId, new RequestData());
             data.requestId = requestId;
             data.startTime = timestamp;
 
             allRequests.put(requestId, data);
-            threadToRequestMap.put(threadName, requestId); // Bind thread
-            pendingQueue.add(requestId); // Add to FIFO queue
+            threadToRequestMap.put(threadName, requestId);
+            pendingQueue.add(requestId);
             return;
         }
 
-        // 2. L2: ERROR (Explicit ID -> HIGH Confidence)
+        // 2. L2: ERROR
         if (message.contains(MSG_ERROR) && argsContent != null) {
-            // Args: [Error Msg, RequestID] -> ID is usually last
+            if (argsContent.endsWith("]")) argsContent = argsContent.substring(0, argsContent.length() - 1);
+
             String requestId = null;
             String errorMsg = null;
 
@@ -203,27 +181,25 @@ public class LogAnalyzer {
                 RequestData data = allRequests.getOrDefault(requestId, new RequestData());
                 data.requestId = requestId;
                 data.errorReason = errorMsg;
-                data.endTime = timestamp; // Approximate end time
-                data.confidence = "HIGH"; // Explicit ID match
+                data.endTime = timestamp;
+                data.confidence = "HIGH";
 
                 allRequests.put(requestId, data);
-                pendingQueue.remove(requestId); // Done
-                threadToRequestMap.values().remove(requestId); // Unbind
+                pendingQueue.remove(requestId);
+                threadToRequestMap.values().remove(requestId);
             }
             return;
         }
 
-        // 3. L3 Case A: END WITH ERROR (Explicit ID -> HIGH Confidence)
+        // 3. L3 Case A: END WITH ERROR
         if (message.contains(MSG_END_WITH_ERROR)) {
-            // Regex for: RequestID: scan_xxx.
             Matcher m = Pattern.compile("RequestID: ([\\w-]+)\\.").matcher(message);
             if (m.find()) {
                 String requestId = m.group(1);
                 RequestData data = allRequests.get(requestId);
                 if (data != null) {
                     data.endTime = timestamp;
-                    data.confidence = "HIGH"; // Explicit ID match
-
+                    data.confidence = "HIGH";
                     pendingQueue.remove(requestId);
                     threadToRequestMap.values().remove(requestId);
                 }
@@ -231,9 +207,8 @@ public class LogAnalyzer {
             return;
         }
 
-        // 4. L3 Case B: END SUCCESS (No ID -> Strategy Check)
+        // 4. L3 Case B: END SUCCESS
         if (message.contains(MSG_END_SUCCESS)) {
-            // STRATEGY 1: THREAD MATCH (High Confidence)
             String requestId = threadToRequestMap.get(threadName);
 
             if (requestId != null) {
@@ -241,26 +216,21 @@ public class LogAnalyzer {
                 if (data != null) {
                     data.endTime = timestamp;
                     data.completedNormally = true;
-                    data.confidence = "HIGH"; // Matched by specific thread
+                    data.confidence = "HIGH";
 
                     pendingQueue.remove(requestId);
                     threadToRequestMap.remove(threadName);
                 }
-                return; // Found match, exit
+                return;
             }
 
-            // STRATEGY 2: FIFO FALLBACK (Low Confidence)
-            // If we are here, thread match failed. Use oldest pending request.
             if (!pendingQueue.isEmpty()) {
                 String fallbackId = pendingQueue.poll();
-
                 RequestData data = allRequests.get(fallbackId);
                 if (data != null) {
                     data.endTime = timestamp;
                     data.completedNormally = true;
-                    data.confidence = "LOW"; // Fallback guess
-
-                    // Try to clean up thread map if possible
+                    data.confidence = "LOW";
                     threadToRequestMap.values().remove(fallbackId);
                 }
             }
@@ -268,47 +238,94 @@ public class LogAnalyzer {
     }
 
     private static void printFinalReport(Map<String, RequestData> requestMap) {
+        // 1. FILTER: VALID (Completed) requests only
+        List<RequestData> validRequests = new ArrayList<>();
+        int incompleteCount = 0;
+
+        for (RequestData req : requestMap.values()) {
+            boolean isFailed = (req.errorReason != null);
+            boolean isSuccess = req.completedNormally;
+            if (!isFailed && !isSuccess) {
+                incompleteCount++;
+            } else {
+                validRequests.add(req);
+            }
+        }
+
+        // 2. CALCULATE SUMMARY
+        Map<String, Integer> summaryCounts = new HashMap<>();
+        for (RequestData req : validRequests) {
+            String cleanError = (req.errorReason == null) ? "-" : req.errorReason;
+            if (cleanError.startsWith("[") && cleanError.endsWith("]")) {
+                cleanError = cleanError.substring(1, cleanError.length()-1);
+            }
+            summaryCounts.put(cleanError, summaryCounts.getOrDefault(cleanError, 0) + 1);
+        }
+
+        // 3. PRINT HEADER & SUMMARY
         System.out.println("\n");
         System.out.println("=======================================================================================================================");
         System.out.println("FINAL ANALYSIS REPORT");
-        System.out.println("Total Requests Found: " + requestMap.size());
+        System.out.println("Total Completed Requests: " + validRequests.size());
+        System.out.println("(Excluded " + incompleteCount + " requests likely from CLI)");
         System.out.println("=======================================================================================================================");
 
-        if (requestMap.isEmpty()) {
-            System.out.println("No requests found.");
+        System.out.println("\n--- SUMMARY BY ERROR REASON ---");
+        System.out.printf("%-80s | %s%n", "Error Reason", "Count");
+        System.out.println("-----------------------------------------------------------------------------------------------------------------------");
+
+        List<Map.Entry<String, Integer>> sortedSummary = new ArrayList<>(summaryCounts.entrySet());
+        sortedSummary.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
+        for (Map.Entry<String, Integer> entry : sortedSummary) {
+            String cleanKey = entry.getKey();
+            if (cleanKey.length() > 77) cleanKey = cleanKey.substring(0, 74) + "...";
+            System.out.printf("%-80s | %d%n", cleanKey, entry.getValue());
+        }
+        System.out.println("-----------------------------------------------------------------------------------------------------------------------");
+
+
+        if (validRequests.isEmpty()) {
+            System.out.println("\nNo completed requests found.");
             return;
         }
 
-        System.out.printf("%-36s | %-12s | %-12s | %-10s | %s%n", "Request ID", "Duration(ms)", "Status", "Confidence", "Error Reason");
-        System.out.println("-----------------------------------------------------------------------------------------------------------------------");
-
-        List<RequestData> sortedRequests = new ArrayList<>(requestMap.values());
-        sortedRequests.sort((r1, r2) -> {
+        // 4. SORT DETAILED ROWS
+        validRequests.sort((r1, r2) -> {
+            String e1 = (r1.errorReason == null) ? "ZZZZ_SUCCESS" : r1.errorReason;
+            String e2 = (r2.errorReason == null) ? "ZZZZ_SUCCESS" : r2.errorReason;
+            int errorCompare = e1.compareTo(e2);
+            if (errorCompare != 0) return errorCompare;
             if (r1.startTime == null) return 1;
             if (r2.startTime == null) return -1;
             return r1.startTime.compareTo(r2.startTime);
         });
 
-        for (RequestData req : sortedRequests) {
-            long duration = 0;
+        // 5. PRINT DETAILED ROWS
+        System.out.println("\n--- DETAILED REQUESTS ---");
+        System.out.printf("%-36s | %-12s | %-12s | %-10s | %s%n", "Request ID", "Duration(s)", "Status", "Confidence", "Error Reason");
+        System.out.println("-----------------------------------------------------------------------------------------------------------------------");
+
+        for (RequestData req : validRequests) {
+            double durationSeconds = 0.0;
             String status = "UNKNOWN";
 
             if (req.errorReason != null) status = "FAILED";
             else if (req.completedNormally) status = "SUCCESS";
-            else status = "INCOMPLETE";
 
             if (req.startTime != null && req.endTime != null) {
-                duration = ChronoUnit.MILLIS.between(req.startTime, req.endTime);
+                long durationMillis = ChronoUnit.MILLIS.between(req.startTime, req.endTime);
+                durationSeconds = durationMillis / 1000.0;
             }
 
             String conf = (req.confidence != null) ? req.confidence : "-";
-
             String cleanError = (req.errorReason == null) ? "-" : req.errorReason;
+
             if (cleanError.startsWith("[") && cleanError.endsWith("]")) cleanError = cleanError.substring(1, cleanError.length()-1);
             if (cleanError.length() > 50) cleanError = cleanError.substring(0, 47) + "...";
 
-            System.out.printf("%-36s | %-12d | %-12s | %-10s | %s%n",
-                req.requestId, duration, status, conf, cleanError);
+            System.out.printf("%-36s | %-12.2f | %-12s | %-10s | %s%n",
+                req.requestId, durationSeconds, status, conf, cleanError);
         }
         System.out.println("-----------------------------------------------------------------------------------------------------------------------");
     }
@@ -319,6 +336,6 @@ public class LogAnalyzer {
         LocalDateTime endTime;
         String errorReason;
         boolean completedNormally = false;
-        String confidence; // NEW FIELD
+        String confidence;
     }
 }

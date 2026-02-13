@@ -13,12 +13,13 @@ How execution works:
 
 
 
-How to use it
-    - Save the code as LogAnalyzer.java.
+This is the exact line L1 from logs(request start):
+    - 2026-02-13 04:52:24.562 GMT INFO  pool-69-thread-1 BBAgentAutofixOrchestrator - ParameterizedMessage[messagePattern=Starting AutoFix data generation for requestID: {}, stringArgs=[scan_mlkevg4t_46niibah8oh], throwable=null]
 
-    - Update the logDirectoryPath variable (line 42) to point to your folder,
-      or pass the path as a command-line argument.
+lines for L2 (to get potential errorReason, might not exist):
+    - 2026-02-13 05:00:48.002 GMT ERROR pool-69-thread-2 MASingleFileInOutService - ParameterizedMessage[messagePattern=Error in getting Single file autofix generation from ML service {} for reqId: {} , stringArgs=[[GENERIC_EXCEPTION] Server error. Unexpected error executing your command. Retry or contact BlueOptima Support., scan_mlkevg56_fckgx4ljby], throwable=null]
+        Now there are 2 cases for finding the ending line for a request (L3), if error Reason found for request ID look for:
+        logger.info("RequestID: {}. How-To-Fix payload created.", requestID);
 
-    - Important: Check line 17 (BASE_LOG_PATTERN). Log files vary wildly.
-      Ensure the regex matches your file's timestamp and structure. The
-      current regex assumes standard Log4j format: 2023-10-27 10:15:30.000 [main] INFO ClassName - Message
+else if no error detected, look for line:
+    - 2026-02-08 16:21:42.667 GMT INFO  pool-69-thread-1 MASingleFileInOutService - ParameterizedMessage[messagePattern=Autofix process completed successfully for file: {}, stringArgs=[/home/blueoptima/BlueOptima-Integrator/Data/maintainability_agent/scan_mldy3lwk_vk5irgywb4/multifile_ma_request/FlartChartsJDBCDaoImpl.java], throwable=null]
