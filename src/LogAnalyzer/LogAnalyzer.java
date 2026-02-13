@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class LogAnalyzer {
 
@@ -50,6 +51,7 @@ public class LogAnalyzer {
     }
 
     private static void analyzeDirectory(Path startPath) throws IOException {
+        // 1. Collect all log files
         List<Path> logFiles = new ArrayList<>();
         Files.walkFileTree(startPath, new SimpleFileVisitor<Path>() {
             @Override
@@ -61,41 +63,68 @@ public class LogAnalyzer {
             }
         });
 
-        // SORT FILES (Month Rollover)
+        // 2. SORT FILES (Pivot Logic)
+        // Regex to find the pattern .DD-N (e.g., .27-1 or .01-1) anywhere in the name
+        Pattern datePattern = Pattern.compile("\\.(\\d{2})-(\\d+)");
+
         Collections.sort(logFiles, new Comparator<Path>() {
             @Override
             public int compare(Path p1, Path p2) {
-                try {
-                    String n1 = p1.getFileName().toString();
-                    String n2 = p2.getFileName().toString();
+                String n1 = p1.getFileName().toString();
+                String n2 = p2.getFileName().toString();
 
-                    if (n1.equals("integrator-server.log")) return 1;
-                    if (n2.equals("integrator-server.log")) return -1;
+                // Active log always comes last
+                boolean isMain1 = n1.equals("integrator-server.log");
+                boolean isMain2 = n2.equals("integrator-server.log");
+                if (isMain1 && !isMain2) return 1;
+                if (!isMain1 && isMain2) return -1;
+                if (isMain1 && isMain2) return 0;
 
-                    String s1 = n1.substring(n1.lastIndexOf(".") + 1);
-                    String s2 = n2.substring(n2.lastIndexOf(".") + 1);
-                    String[] parts1 = s1.split("-");
-                    String[] parts2 = s2.split("-");
+                int score1 = getChronologicalScore(n1);
+                int score2 = getChronologicalScore(n2);
 
-                    int day1 = Integer.parseInt(parts1[0]);
-                    int day2 = Integer.parseInt(parts2[0]);
-
-                    if (day1 > 20 && day2 < 10) return -1;
-                    if (day1 < 10 && day2 > 20) return 1;
-                    if (day1 != day2) return Integer.compare(day1, day2);
-
-                    return Integer.compare(Integer.parseInt(parts1[1]), Integer.parseInt(parts2[1]));
-                } catch (Exception e) {
-                    return p1.compareTo(p2);
+                if (score1 != score2) {
+                    return Integer.compare(score1, score2);
                 }
+                return n1.compareTo(n2); // Fallback to name if scores identical
+            }
+
+            // Helper to calculate a sortable score
+            private int getChronologicalScore(String filename) {
+                Matcher m = datePattern.matcher(filename);
+                if (m.find()) {
+                    try {
+                        int day = Integer.parseInt(m.group(1));
+                        int rotation = Integer.parseInt(m.group(2));
+
+                        // PIVOT LOGIC:
+                        // If Day > 20, we assume it's the Previous Month (Score = Day)
+                        // If Day <= 20, we assume it's the Current Month (Score = Day + 100)
+                        // Example: 27 -> 27.   01 -> 101.   13 -> 113.
+                        // Result: 27 comes before 01 and 13.
+                        int monthOffset = (day > 20) ? 0 : 100;
+
+                        // Combine into a single number: MMMRR (MonthOffset + Rotation)
+                        // We prioritize Month/Day first, then rotation index.
+                        // Actually, day is enough for the main sort.
+                        return (monthOffset + day) * 100 + rotation;
+                    } catch (NumberFormatException e) {
+                        return 999999; // Put parse errors at the end
+                    }
+                }
+                return 999999; // No date found
             }
         });
 
         System.out.println("[INFO] Processing " + logFiles.size() + " files.");
+        System.out.println("[INFO] First 5 files: " + logFiles.stream().limit(5).map(p -> p.getFileName().toString()).collect(Collectors.joining(", ")));
+        System.out.println("[INFO] Last 5 files: " + logFiles.stream().skip(Math.max(0, logFiles.size() - 5)).map(p -> p.getFileName().toString()).collect(
+            Collectors.joining(", ")));
 
+        // 3. PROCESS
         Map<String, RequestData> allRequests = new HashMap<>();
         Map<String, String> threadToRequestMap = new HashMap<>();
-        LinkedList<String> pendingQueue = new LinkedList<>(); // For FIFO fallback
+        LinkedList<String> pendingQueue = new LinkedList<>();
 
         for (Path file : logFiles) {
             System.out.println("   -> Reading: " + file.getFileName());
