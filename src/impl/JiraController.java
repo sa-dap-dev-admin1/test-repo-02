@@ -74,18 +74,18 @@ public class JiraController {
 
       }
 
-  public int maxSubArray(int[] nums) {
-    int currentSum = nums[0]; // Start with the first element
-    int maxSum = nums[0];     // Initialize maxSum with the first element
 
-    // Traverse the array from the second element
-    for (int i = 1; i < nums.length; i++) {
-      // If currentSum is negative, reset to current element
-      currentSum = Math.max(nums[i], currentSum + nums[i]);
-      // Update maxSum if currentSum is greater
-      maxSum = Math.max(maxSum, currentSum);
-    }
-    return maxSum;
+    public static FlartScoreRequest getFlartScoreRequest(String filePathOnDisk, String repoName,
+                                                       String txWorkingFile, String repoUid,
+                                                       Map<String, String> mappedNewMetrics) {
+    FlartScoreRequest flartScoreRequest = new FlartScoreRequest();
+    flartScoreRequest.setCurrentMetrics(mappedNewMetrics);
+    flartScoreRequest.setFileType(getWorkingFileType(filePathOnDisk));
+    flartScoreRequest.setEnterpriseId(Long.MAX_VALUE);
+    flartScoreRequest.setRepoName(repoName);
+    flartScoreRequest.setTxWorkingFile(txWorkingFile);
+    flartScoreRequest.setRepoUUID(repoUid);
+    return flartScoreRequest;
   }
 
 }
