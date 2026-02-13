@@ -1,5 +1,5 @@
 package com.blueoptima.uix.controller;
-//test 2334ybfhdsdjfkf  Test Pub 2
+
 import com.blueoptima.iam.dto.PermissionsCode;
 import com.blueoptima.uix.SkipValidationCheck;
 import com.blueoptima.uix.annotations.CSVConverter;
@@ -23,9 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 @RestController
@@ -37,6 +34,7 @@ public class JiraController {
     private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
     public static final String UIX_DIR = "uix_invalid_csv_files";
+    private static final String TMP_DIR = "java.io.tmpdir";
 
     @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
@@ -45,55 +43,50 @@ public class JiraController {
     public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
         UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String csvContents = MultipartUtil.getData(data, null);
-        File file = null;
-        Message message;
 
-        //convert a multipart file to File. Test 10
         try {
             File tempDir = createTempDirectory();
-            Optional<File> csvFile = writeCSVToFile(csvContents, tempDir, userToken.getUserId());
-            message = handleJiraTicketCreation(csvFile);
+            Optional<File> csvFile = writeCSVToFile(csvContents, tempDir, userToken);
+            return handleJiraTicketCreation(csvFile);
         } catch (IOException e) {
-            logger.error("Error in file processing: ", e);
+            logger.error("Error in file reading: ", e);
             throw e;
         }
-
-        return message;
     }
 
     private File createTempDirectory() throws IOException {
-        String tmpDir = System.getProperty("java.io.tmpdir");
-        Path dirPath = Paths.get(tmpDir, UIX_DIR);
-        // empty check here.
-        return Files.createDirectories(dirPath).toFile();
+        String tmpDir = System.getProperty(TMP_DIR);
+        File dir = new File(tmpDir, UIX_DIR);
+        if (!dir.exists() && !dir.mkdir()) {
+            throw new IOException("Failed to create directory: " + dir.getAbsolutePath());
+        }
+        return dir;
     }
 
-    private Optional<File> writeCSVToFile(String csvContents, File dir, String userId) throws IOException {
-        // doing null check 
+    private Optional<File> writeCSVToFile(String csvContents, File dir, UserToken userToken) throws IOException {
         if (csvContents == null) {
             return Optional.empty();
         }
-        String fileName = FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userId;
-        File file = new File(dir, fileName);
-        FileUtils.writeStringToFile(file, csvContents);
+
+        File file = new File(dir, generateFileName(userToken));
+        try (var writer = FileUtils.openOutputStream(file)) {
+            writer.write(csvContents.getBytes());
+        }
         return Optional.of(file);
     }
 
+    private String generateFileName(UserToken userToken) {
+        return FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId();
+    }
+
     private Message handleJiraTicketCreation(Optional<File> csvFile) throws IOException {
-        return csvFile.map(file -> {
-            try {
-                return jiraService.raiseTSUP(file);
-            } catch (IOException e) {
-                logger.error("Error raising JIRA ticket: ", e);
-                throw new RuntimeException("Failed to raise JIRA ticket", e);
-            }
-        }).orElseThrow(() -> new IOException("CSV file could not be created"));
+        return jiraService.raiseTSUP(csvFile.orElse(null));
     }
 
     public int maxSubArray(int[] nums) {
         int currentSum = nums[0]; // Start with the first element
         int maxSum = nums[0];     // Initialize maxSum with the first element
-        //comment added
+
         // Traverse the array from the second element
         for (int i = 1; i < nums.length; i++) {
             // If currentSum is negative, reset to current element
