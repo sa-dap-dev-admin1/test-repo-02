@@ -74,20 +74,6 @@ public class JiraController {
 
       }
 
-  public int maxSubArray(int[] nums) {
-    int currentSum = nums[0]; // Start with the first element
-    int maxSum = nums[0];     // Initialize maxSum with the first element
-
-    // Traverse the array from the second element
-    for (int i = 1; i < nums.length; i++) {
-      // If currentSum is negative, reset to current element
-      currentSum = Math.max(nums[i], currentSum + nums[i]);
-      // Update maxSum if currentSum is greater
-      maxSum = Math.max(maxSum, currentSum);
-    }
-    return maxSum;
-  }
-
 
   public class FileMetrics {
 
@@ -219,21 +205,4 @@ public class JiraController {
             safeFixApplied);
     }
 
-    public static  PublisherPayload getFailurePayload(RequestDetails request, BOpSCRData scrData,
-                                                      String exclusionReason, int prSize, List<FileToBePublished> filesPublishList){
-
-      try {
-        logger.info("Creating publisher Failure scenario payload for Maintainability Plugin...");
-        PublisherPayload details =  enrichAndCreatePayload(request, scrData, true, prSize, filesPublishList);
-        details.setPrExclusionReason(exclusionReason);
-        return details;
-      } catch (FatalPluginProcessingException e) {
-        logger.error("Error {} in creating publisher Failure scenario payload for Maintainability Plugin for req {}", e.getMessage(), request.getRequestID());
-        return PublisherPayload.builder().
-            requestID(request.getRequestID()).
-            pr_excluded(true).
-            prExclusionReason(exclusionReason).
-            build();
-      }
-    }
 }
