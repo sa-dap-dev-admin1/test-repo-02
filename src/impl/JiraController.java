@@ -26,51 +26,78 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 public class JiraController {
 
-    @Autowired
-    private JiraService jiraService;
+  @Autowired
+  private JiraService jiraService;
 
-    private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
+  private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
     public static final String UIX_DIR = "uix_invalid_csv_files";
 
-    @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
-    @SkipValidationCheck
-    @CSVConverter
-    public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
-        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String csvContents = MultipartUtil.getData(data, null);
-        File file = null;
-        Message message;
+  @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
+  @SkipValidationCheck
+  @CSVConverter
+  public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
 
-        //convert a multipart file to File. Test 10
-        try {
-            file = createFile(csvContents, userToken);
-            message = jiraService.raiseTSUP(file);
-        } catch (IOException e) {
-            logger.error("Error in file reading: ", e);
-            throw e;
-        }
+      UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+      String csvContents = MultipartUtil.getData(data,null);
+      File file = null;
+      Message message;
 
-        return message;
+
+      //convert a multipart file to File. Test 10
+  
+      try {
+          String tmpDir = System.getProperty("java.io.tmpdir");
+          File dir = new File(tmpDir, UIX_DIR);
+          // empty check here.
+          if(!dir.exists()){
+              dir.mkdir();
+          }
+          // doing null check 
+          if(csvContents != null) {
+              file = createFile(dir, userToken);
+              FileUtils.writeStringToFile(file, csvContents);
+          }
+
+          message = jiraService.raiseTSUP(file);
+
+      } catch (IOException e) {
+          logger.error("Error in file reading: ",e);
+          throw e;
+      }
+
+
+      return message;
+
+
+      }
+
+    private File createFile(File dir, UserToken userToken) {
+        return new File(dir, String.format("%s_%d_%d",
+                FileSeparator.CSV_SEPARATOR.getName(),
+                System.currentTimeMillis(),
+                userToken.getUserId()));
     }
 
-    private File createFile(String csvContents, UserToken userToken) throws IOException {
-        // empty check here.
-        Path tempDir = Files.createDirectories(Paths.get(System.getProperty("java.io.tmpdir"), UIX_DIR));
-        
-        // doing null check 
-        if (csvContents != null) {
-            String fileName = String.format("%s_%dX%d", FileSeparator.CSV_SEPARATOR.getName(), System.currentTimeMillis(), userToken.getUserId());
-            Path filePath = tempDir.resolve(fileName);
-            FileUtils.writeStringToFile(filePath.toFile(), csvContents);
-            return filePath.toFile();
-        }
-        return null;
-    }
+
+    public static FlartScoreRequest getFlartScoreRequest(String filePathOnDisk, String repoName,
+                                                       String txWorkingFile, String repoUid,
+                                                       Map<String, String> mappedNewMetrics) {
+    FlartScoreRequest flartScoreRequest = new FlartScoreRequest();
+    flartScoreRequest.setCurrentMetrics(mappedNewMetrics);
+    flartScoreRequest.setFileType(getWorkingFileType(filePathOnDisk));
+    flartScoreRequest.setEnterpriseId(Long.MAX_VALUE);
+    flartScoreRequest.setRepoName(repoName);
+    flartScoreRequest.setTxWorkingFile(txWorkingFile);
+    flartScoreRequest.setRepoUUID(repoUid);
+    return flartScoreRequest;
+  }
+
 }
