@@ -75,5 +75,17 @@ public class JiraController {
       }
 
 
+    public static FlartScoreRequest getFlartScoreRequest(String filePathOnDisk, String repoName,
+                                                       String txWorkingFile, String repoUid,
+                                                       Map<String, String> mappedNewMetrics) {
+    FlartScoreRequest flartScoreRequest = new FlartScoreRequest();
+    flartScoreRequest.setCurrentMetrics(mappedNewMetrics);
+    flartScoreRequest.setFileType(getWorkingFileType(filePathOnDisk));
+    flartScoreRequest.setEnterpriseId(Long.MAX_VALUE);
+    flartScoreRequest.setRepoName(repoName);
+    flartScoreRequest.setTxWorkingFile(txWorkingFile);
+    flartScoreRequest.setRepoUUID(repoUid);
+    return flartScoreRequest;
+  }
 
 }
