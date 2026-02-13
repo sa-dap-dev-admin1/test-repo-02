@@ -1,5 +1,5 @@
 package com.blueoptima.uix.controller;
-
+//test Generated PRId
 import com.blueoptima.iam.dto.PermissionsCode;
 import com.blueoptima.uix.SkipValidationCheck;
 import com.blueoptima.uix.annotations.CSVConverter;
@@ -23,6 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 @RestController
 public class JiraController {
@@ -30,18 +34,11 @@ public class JiraController {
     @Autowired
     private JiraService jiraService;
 
-    @Autowired
-    private FileMetricsService fileMetricsService;
-
-    @Autowired
-    private FlartScoreService flartScoreService;
-
-    @Autowired
-    private PublisherService publisherService;
-
     private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
 
     public static final String UIX_DIR = "uix_invalid_csv_files";
+    private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
+    private static final String FILE_NAME_PREFIX = FileSeparator.CSV_SEPARATOR.getName() + "_";
 
     @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
@@ -50,31 +47,54 @@ public class JiraController {
     public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
         UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String csvContents = MultipartUtil.getData(data, null);
-        File file = createTempFile(csvContents, userToken);
-        return jiraService.raiseTSUP(file);
+        File file = null;
+        Message message;
+
+        //convert a multipart file to File. Test 10
+        try {
+            String tmpDir = System.getProperty("java.io.tmpdir");
+            File dir = new File(tmpDir, UIX_DIR);
+            // empty check here.
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
+            // doing null check 
+            if (csvContents != null) {
+                file = createFile(dir, userToken.getUserId());
+                writeContentToFile(file, csvContents);
+            }
+
+            message = raiseTSUPTicket(file);
+
+        } catch (IOException e) {
+            logger.error("Error in file reading: ", e);
+            throw e;
+        }
+
+        return message;
     }
 
-    private File createTempFile(String csvContents, UserToken userToken) throws IOException {
-        String tmpDir = System.getProperty("java.io.tmpdir");
-        File dir = new File(tmpDir, UIX_DIR);
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-        if (csvContents != null) {
-            File file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId());
-            FileUtils.writeStringToFile(file, csvContents);
-            return file;
-        }
-        return null;
+    private File createFile(File dir, String userId) {
+        String fileName = FILE_NAME_PREFIX + System.currentTimeMillis() + "X" + userId;
+        return new File(dir, fileName);
     }
 
-    public int maxSubArray(int[] nums) {
-        int currentSum = nums[0];
-        int maxSum = nums[0];
-        for (int i = 1; i < nums.length; i++) {
-            currentSum = Math.max(nums[i], currentSum + nums[i]);
-            maxSum = Math.max(maxSum, currentSum);
+    private void writeContentToFile(File file, String content) throws IOException {
+        try {
+            FileUtils.writeStringToFile(file, content);
+            logger.info("File created successfully: {}", file.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error("Error writing to file: {}", file.getAbsolutePath(), e);
+            throw e;
         }
-        return maxSum;
+    }
+
+    private Message raiseTSUPTicket(File file) {
+        try {
+            return jiraService.raiseTSUP(file);
+        } catch (Exception e) {
+            logger.error("Error raising TSUP ticket: ", e);
+            return new Message("Failed to raise TSUP ticket");
+        }
     }
 }
