@@ -23,6 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 
 @RestController
 public class JiraController {
@@ -57,8 +61,11 @@ public class JiraController {
           }
           // doing null check 
           if(csvContents != null) {
-              file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId());
+              file = createFile(dir, userToken.getUserId());
               FileUtils.writeStringToFile(file, csvContents);
+          } else {
+              logger.error("CSV contents are null");
+              return new Message("Error: CSV contents are null");
           }
 
           message = jiraService.raiseTSUP(file);
@@ -68,14 +75,14 @@ public class JiraController {
           throw e;
       }
 
-
       return message;
+  }
 
+  private File createFile(File dir, String userId) {
+      return new File(dir, String.format("%s_%dX%s", FileSeparator.CSV_SEPARATOR.getName(), System.currentTimeMillis(), userId));
+  }
 
-      }
-
-
-    public static FlartScoreRequest getFlartScoreRequest(String filePathOnDisk, String repoName,
+  public static FlartScoreRequest getFlartScoreRequest(String filePathOnDisk, String repoName,
                                                        String txWorkingFile, String repoUid,
                                                        Map<String, String> mappedNewMetrics) {
     FlartScoreRequest flartScoreRequest = new FlartScoreRequest();
