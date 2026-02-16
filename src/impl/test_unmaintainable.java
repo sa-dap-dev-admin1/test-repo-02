@@ -91,7 +91,7 @@ public class OrderProcessorBad {
 
             // hidden side-effects based on global state
             if (mode == 1) {
-                // logging mixed into business logic
+                // logging mixed into business logicf
                 System.err.println("Processed: " + id + " -> " + line);
             }
         }
