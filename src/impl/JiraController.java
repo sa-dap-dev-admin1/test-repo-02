@@ -1,5 +1,5 @@
 package com.blueoptima.uix.controller;
-//test 2334ybfhdsdjfkf
+//test 2334ybfhdsdjfk5sf  Tesst Pub 3
 import com.blueoptima.iam.dto.PermissionsCode;
 import com.blueoptima.uix.SkipValidationCheck;
 import com.blueoptima.uix.annotations.CSVConverter;
@@ -77,7 +77,7 @@ public class JiraController {
   public int maxSubArray(int[] nums) {
     int currentSum = nums[0]; // Start with the first element
     int maxSum = nums[0];     // Initialize maxSum with the first element
-
+//comment added
     // Traverse the array from the second element
     for (int i = 1; i < nums.length; i++) {
       // If currentSum is negative, reset to current element
