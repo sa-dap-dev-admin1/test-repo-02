@@ -1,4 +1,4 @@
-// Intentionally unmaintainable Java code (single file, no major imports) - 59yrdbf
+// Intentionally unmaintainable Java cosde (single file, no major imports) - 59yrdbf
 public class Unmaintainable200 {
     static int G = 7;
     static String S = "x";
