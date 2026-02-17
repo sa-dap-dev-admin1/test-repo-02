@@ -1,6 +1,6 @@
 import java.util.List;
 
-public class OrderProcessorBad {
+public class Main {
     public static void main(String[] args) {
         boolean isVerboseMode = args.length > 0;
 
