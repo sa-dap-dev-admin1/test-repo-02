@@ -33,7 +33,7 @@ public class LogAnalyzer {
         if (args.length > 0) logPath = Paths.get(args[0]);
 
         System.out.println("==================================================");
-        System.out.println("LOG ANALYZER v11.0 (Summary First)");
+        System.out.println("LOG ANALYZER");
         System.out.println("Scanning directory: " + logPath.toAbsolutePath());
         System.out.println("==================================================");
 
@@ -267,7 +267,6 @@ public class LogAnalyzer {
         System.out.println("=======================================================================================================================");
         System.out.println("FINAL ANALYSIS REPORT");
         System.out.println("Total Completed Requests: " + validRequests.size());
-        System.out.println("(Excluded " + incompleteCount + " requests likely from CLI)");
         System.out.println("=======================================================================================================================");
 
         System.out.println("\n--- SUMMARY BY ERROR REASON ---");
