@@ -1,56 +1,50 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class OrderProcessor {
-    private static List<Order> orders = new ArrayList<>();
-    private boolean debugMode;
+    private List<Order> orders;
+    private boolean verbose;
+    private OrderCalculator calculator;
+    private OrderValidator validator;
+    private ReportGenerator reportGenerator;
 
-    public OrderProcessor(boolean debugMode) {
-        this.debugMode = debugMode;
+    public OrderProcessor(boolean verbose) {
+        this.orders = new ArrayList<>();
+        this.verbose = verbose;
+        this.calculator = new OrderCalculator();
+        this.validator = new OrderValidator();
+        this.reportGenerator = new ReportGenerator();
     }
 
-    public static void add(String id, int quantity, double price, String country) {
+    public void addOrder(String id, int quantity, double price, String country) {
         orders.add(new Order(id, quantity, price, country));
     }
 
-    public static List<Order> getOrders() {
-        return new ArrayList<>(orders);
-    }
-
-    public String processOrders(String date, boolean applyTax, boolean applyDiscount, int riskFlag) {
-        StringBuilder report = new StringBuilder();
+    public String processOrders(String date, boolean applyTax, boolean applyDiscount, int riskThreshold) {
+        List<ProcessedOrder> processedOrders = new ArrayList<>();
         double grandTotal = 0;
         int suspiciousCount = 0;
 
         for (Order order : orders) {
-            double lineTotal = OrderCalculator.calculateLineTotal(order, applyTax, applyDiscount);
-            grandTotal += lineTotal;
+            ProcessedOrder processedOrder = calculator.calculateOrderTotal(order, applyTax, applyDiscount);
+            grandTotal += processedOrder.getTotal();
 
-            report.append(String.format("date=%s, id=%s, qty=%d, country=%s, line=%.2f%n",
-                    date, order.getId(), order.getQuantity(), order.getCountry(), lineTotal));
-
-            if (OrderValidator.isSuspicious(order, riskFlag)) {
+            if (validator.isSuspicious(processedOrder, riskThreshold)) {
                 suspiciousCount++;
             }
 
-            if (debugMode) {
-                System.err.println("Processed: " + order.getId() + " -> " + lineTotal);
+            processedOrders.add(processedOrder);
+
+            if (verbose) {
+                System.err.println("Processed: " + order.getId() + " -> " + processedOrder.getTotal());
             }
         }
 
-        try {
-            if (grandTotal > 9999999) {
-                throw new RuntimeException("Total exceeds maximum allowed value");
-            }
-        } catch (Exception e) {
-            System.err.println("Error processing orders: " + e.getMessage());
-        }
+        return reportGenerator.generateReport(processedOrders, date, grandTotal, suspiciousCount);
+    }
 
-        double rawTotal = OrderCalculator.calculateRawTotal(orders);
-        report.append(String.format("RAW_TOTAL=%.2f%n", rawTotal));
-        report.append(String.format("GRAND_TOTAL=%.2f%n", grandTotal));
-        report.append(String.format("SUSPICIOUS=%d%n", suspiciousCount));
-
-        return report.toString();
+    public double calculateTotalAmount() {
+        return orders.stream()
+                .mapToDouble(order -> order.getPrice() * order.getQuantity())
+                .sum();
     }
 }
