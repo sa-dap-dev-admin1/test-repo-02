@@ -1,46 +1,59 @@
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class OrderProcessor {
-    private final boolean verbose;
-    private final TaxCalculator taxCalculator;
-    private final DiscountCalculator discountCalculator;
-    private final RiskAssessor riskAssessor;
-    private final ReportGenerator reportGenerator;
+    private List<OrderDTO> orders;
+    private int mode;
 
-    public OrderProcessor(boolean verbose) {
-        this.verbose = verbose;
-        this.taxCalculator = new TaxCalculator();
-        this.discountCalculator = new DiscountCalculator();
-        this.riskAssessor = new RiskAssessor();
-        this.reportGenerator = new ReportGenerator();
+    public OrderProcessor() {
+        this.orders = new CopyOnWriteArrayList<>();
+        this.mode = 0;
     }
 
-    public String process(List<Order> orders, String date, boolean applyTax, boolean applyDiscount, int riskThreshold) {
+    public void setMode(int mode) {
+        this.mode = mode;
+    }
+
+    public void addOrder(String id, int quantity, double price, String country) {
+        OrderDTO order = new OrderDTO(id, quantity, price, country, System.currentTimeMillis());
+        orders.add(order);
+    }
+
+    public String processOrders(String date, boolean applyTax, boolean applyDiscount, int riskFlag) {
+        OrderCalculator calculator = new OrderCalculator();
+        OrderValidator validator = new OrderValidator();
+        ReportGenerator reportGenerator = new ReportGenerator();
+
         double grandTotal = 0;
         int suspiciousCount = 0;
 
-        for (Order order : orders) {
-            double lineTotal = order.getPrice() * order.getQuantity();
-
-            if (applyDiscount) {
-                lineTotal = discountCalculator.applyDiscount(lineTotal, order.getQuantity(), order.getPrice());
-            }
-
-            if (applyTax) {
-                lineTotal = taxCalculator.applyTax(lineTotal, order.getCountry());
-            }
-
+        for (OrderDTO order : orders) {
+            double lineTotal = calculator.calculateLineTotal(order, applyTax, applyDiscount);
             grandTotal += lineTotal;
 
-            if (riskAssessor.isOrderSuspicious(order, riskThreshold)) {
+            if (validator.isSuspicious(order, riskFlag)) {
                 suspiciousCount++;
             }
 
-            if (verbose) {
-                System.err.println("Processed: " + order.getId() + " -> " + lineTotal);
+            if (mode == 1) {
+                LoggingUtil.log("Processed: " + order.getId() + " -> " + lineTotal);
             }
         }
 
+        try {
+            if (grandTotal > OrderConstants.MAX_GRAND_TOTAL) {
+                throw new OrderProcessingException("Total exceeds maximum allowed");
+            }
+        } catch (OrderProcessingException e) {
+            LoggingUtil.logError("Error processing orders: " + e.getMessage());
+        }
+
         return reportGenerator.generateReport(orders, date, grandTotal, suspiciousCount);
+    }
+
+    public double calculateRawTotal() {
+        return orders.stream()
+                .mapToDouble(order -> order.getPrice() * order.getQuantity())
+                .sum();
     }
 }
