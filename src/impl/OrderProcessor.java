@@ -1,59 +1,56 @@
+import java.util.ArrayList;
 import java.util.List;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 public class OrderProcessor {
-    private boolean verbose;
-    private DiscountStrategy discountStrategy;
-    private TaxStrategy taxStrategy;
+    private static List<Order> orders = new ArrayList<>();
+    private boolean debugMode;
 
-    public OrderProcessor(boolean verbose) {
-        this.verbose = verbose;
-        this.discountStrategy = new DefaultDiscountStrategy();
-        this.taxStrategy = new DefaultTaxStrategy();
+    public OrderProcessor(boolean debugMode) {
+        this.debugMode = debugMode;
     }
 
-    public void add(String id, int qty, double price, String country) {
-        OrderRepository.getInstance().addOrder(new Order(id, qty, BigDecimal.valueOf(price), country));
+    public static void add(String id, int quantity, double price, String country) {
+        orders.add(new Order(id, quantity, price, country));
     }
 
-    public String process(List<Order> orders, String date, boolean applyTax, boolean applyDiscount, 
-                          RiskAnalyzer riskAnalyzer, OrderReporter reporter) {
-        StringBuilder out = new StringBuilder();
-        BigDecimal grandTotal = BigDecimal.ZERO;
+    public static List<Order> getOrders() {
+        return new ArrayList<>(orders);
+    }
+
+    public String processOrders(String date, boolean applyTax, boolean applyDiscount, int riskFlag) {
+        StringBuilder report = new StringBuilder();
+        double grandTotal = 0;
         int suspiciousCount = 0;
 
         for (Order order : orders) {
-            BigDecimal lineTotal = calculateLineTotal(order, applyTax, applyDiscount);
-            grandTotal = grandTotal.add(lineTotal);
+            double lineTotal = OrderCalculator.calculateLineTotal(order, applyTax, applyDiscount);
+            grandTotal += lineTotal;
 
-            out.append(reporter.generateOrderLine(date, order, lineTotal)).append("\n");
+            report.append(String.format("date=%s, id=%s, qty=%d, country=%s, line=%.2f%n",
+                    date, order.getId(), order.getQuantity(), order.getCountry(), lineTotal));
 
-            if (riskAnalyzer.isOrderSuspicious(order)) {
+            if (OrderValidator.isSuspicious(order, riskFlag)) {
                 suspiciousCount++;
             }
 
-            if (verbose) {
+            if (debugMode) {
                 System.err.println("Processed: " + order.getId() + " -> " + lineTotal);
             }
         }
 
-        out.append(reporter.generateTotals(orders, grandTotal, suspiciousCount));
-
-        return out.toString();
-    }
-
-    private BigDecimal calculateLineTotal(Order order, boolean applyTax, boolean applyDiscount) {
-        BigDecimal lineTotal = order.getPrice().multiply(BigDecimal.valueOf(order.getQuantity()));
-
-        if (applyDiscount) {
-            lineTotal = discountStrategy.applyDiscount(order, lineTotal);
+        try {
+            if (grandTotal > 9999999) {
+                throw new RuntimeException("Total exceeds maximum allowed value");
+            }
+        } catch (Exception e) {
+            System.err.println("Error processing orders: " + e.getMessage());
         }
 
-        if (applyTax) {
-            lineTotal = taxStrategy.applyTax(order, lineTotal);
-        }
+        double rawTotal = OrderCalculator.calculateRawTotal(orders);
+        report.append(String.format("RAW_TOTAL=%.2f%n", rawTotal));
+        report.append(String.format("GRAND_TOTAL=%.2f%n", grandTotal));
+        report.append(String.format("SUSPICIOUS=%d%n", suspiciousCount));
 
-        return lineTotal.setScale(2, RoundingMode.HALF_UP);
+        return report.toString();
     }
 }
