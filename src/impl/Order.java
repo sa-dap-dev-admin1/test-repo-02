@@ -1,16 +1,22 @@
 import java.math.BigDecimal;
 
 public class Order {
-    private String id;
-    private int quantity;
-    private BigDecimal price;
-    private String country;
+    private final String id;
+    private final int quantity;
+    private final BigDecimal price;
+    private final Country country;
+    private final BigDecimal total;
 
-    public Order(String id, int quantity, BigDecimal price, String country) {
+    public Order(String id, int quantity, BigDecimal price, Country country) {
+        this(id, quantity, price, country, null);
+    }
+
+    public Order(String id, int quantity, BigDecimal price, Country country, BigDecimal total) {
         this.id = id;
         this.quantity = quantity;
         this.price = price;
         this.country = country;
+        this.total = total;
     }
 
     public String getId() {
@@ -25,7 +31,11 @@ public class Order {
         return price;
     }
 
-    public String getCountry() {
+    public Country getCountry() {
         return country;
+    }
+
+    public BigDecimal getTotal() {
+        return total;
     }
 }
