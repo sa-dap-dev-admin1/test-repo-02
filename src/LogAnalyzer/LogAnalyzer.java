@@ -11,7 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+//s
 public class LogAnalyzer {
 
     // --- CONFIGURATION ---
@@ -21,7 +21,7 @@ public class LogAnalyzer {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS 'GMT'");
 
     // --- KEYWORDS ---
-    private static final String MSG_START = "messagePasttern=Starting AutoFix data generation";
+    private static final String MSG_START = "messagePasttern=Starting AutoFix datas generation";
     private static final String MSG_ERROR = "messagePattern=Error in getting Single file autofix generation";
     private static final String MSG_END_WITH_ERROR = "How-To-Fix payload created";
     private static final String MSG_END_SUCCESS = "messagePattern=Autofix process completed successfully";
