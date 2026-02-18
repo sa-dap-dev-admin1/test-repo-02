@@ -1,59 +1,31 @@
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.List;
 
 public class OrderProcessor {
-    private List<OrderDTO> orders;
-    private int mode;
-
-    public OrderProcessor() {
-        this.orders = new CopyOnWriteArrayList<>();
-        this.mode = 0;
-    }
-
-    public void setMode(int mode) {
-        this.mode = mode;
-    }
-
-    public void addOrder(String id, int quantity, double price, String country) {
-        OrderDTO order = new OrderDTO(id, quantity, price, country, System.currentTimeMillis());
-        orders.add(order);
-    }
-
-    public String processOrders(String date, boolean applyTax, boolean applyDiscount, int riskFlag) {
-        OrderCalculator calculator = new OrderCalculator();
-        OrderValidator validator = new OrderValidator();
-        ReportGenerator reportGenerator = new ReportGenerator();
-
+    public String process(List<Order> orders, String date, boolean applyTax, boolean applyDiscount, int riskFlag,
+                          TaxCalculator taxCalculator, DiscountCalculator discountCalculator,
+                          RiskAssessor riskAssessor, OrderReporter reporter) {
         double grandTotal = 0;
         int suspiciousCount = 0;
 
-        for (OrderDTO order : orders) {
-            double lineTotal = calculator.calculateLineTotal(order, applyTax, applyDiscount);
-            grandTotal += lineTotal;
+        for (Order order : orders) {
+            double lineTotal = order.calculateLineTotal();
 
-            if (validator.isSuspicious(order, riskFlag)) {
+            if (applyDiscount) {
+                lineTotal = discountCalculator.applyDiscount(order, lineTotal);
+            }
+
+            if (applyTax) {
+                lineTotal = taxCalculator.calculateTax(order, lineTotal);
+            }
+
+            if (riskAssessor.isOrderSuspicious(order, riskFlag)) {
                 suspiciousCount++;
             }
 
-            if (mode == 1) {
-                LoggingUtil.log("Processed: " + order.getId() + " -> " + lineTotal);
-            }
+            grandTotal += lineTotal;
+            reporter.addOrderToReport(date, order, lineTotal);
         }
 
-        try {
-            if (grandTotal > OrderConstants.MAX_GRAND_TOTAL) {
-                throw new OrderProcessingException("Total exceeds maximum allowed");
-            }
-        } catch (OrderProcessingException e) {
-            LoggingUtil.logError("Error processing orders: " + e.getMessage());
-        }
-
-        return reportGenerator.generateReport(orders, date, grandTotal, suspiciousCount);
-    }
-
-    public double calculateRawTotal() {
-        return orders.stream()
-                .mapToDouble(order -> order.getPrice() * order.getQuantity())
-                .sum();
+        return reporter.generateReport(orders, grandTotal, suspiciousCount);
     }
 }

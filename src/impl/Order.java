@@ -1,9 +1,9 @@
 public class Order {
-    private final String id;
-    private final int quantity;
-    private final double price;
-    private final String country;
-    private final long timestamp;
+    private String id;
+    private int quantity;
+    private double price;
+    private String country;
+    private long timestamp;
 
     public Order(String id, int quantity, double price, String country) {
         this.id = id;
@@ -13,23 +13,14 @@ public class Order {
         this.timestamp = System.currentTimeMillis();
     }
 
-    public String getId() {
-        return id;
+    public double calculateLineTotal() {
+        return price * quantity;
     }
 
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
+    // Getters
+    public String getId() { return id; }
+    public int getQuantity() { return quantity; }
+    public double getPrice() { return price; }
+    public String getCountry() { return country; }
+    public long getTimestamp() { return timestamp; }
 }

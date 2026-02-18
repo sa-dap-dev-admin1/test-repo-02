@@ -1,10 +1,23 @@
-public class TaxCalculator {
-    public double applyTax(double amount, String country) {
-        double taxRate = switch (country) {
-            case "IN" -> 0.18;
-            case "US" -> 0.0825;
-            default -> 0.1;
-        };
-        return amount * (1 + taxRate);
+public interface TaxCalculator {
+    double calculateTax(Order order, double amount);
+}
+
+class TaxCalculatorImpl implements TaxCalculator {
+    @Override
+    public double calculateTax(Order order, double amount) {
+        switch (order.getCountry()) {
+            case "IN":
+                return amount * 1.18;
+            case "US":
+                return amount * 1.0825;
+            default:
+                return amount * 1.1;
+        }
+    }
+}
+
+class TaxCalculatorFactory {
+    public TaxCalculator createTaxCalculator() {
+        return new TaxCalculatorImpl();
     }
 }
