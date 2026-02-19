@@ -23,69 +23,80 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class JiraController {
 
-  @Autowired
-  private JiraService jiraService;
-
-  private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(JiraController.class);
     public static final String UIX_DIR = "uix_invalid_csv_files";
 
-  @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
-  @SkipValidationCheck
-  @CSVConverter
-  public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
+    @Autowired
+    private JiraService jiraService;
 
-      UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-      String csvContents = MultipartUtil.getData(data,null);
-      File file = null;
-      Message message;
+    @RequestMapping(name = "Request to raise a ticket", value = "/v1/admin/jira/issue", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @AccessCode(PermissionsCode.DEVELOPER_READ + PermissionsCode.DEVELOPER_WRITE)
+    @SkipValidationCheck
+    @CSVConverter
+    public Message raiseJiraTicket(@RequestBody MultipartFile data) throws IOException {
+        UserToken userToken = (UserToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String csvContents = MultipartUtil.getData(data, null);
+        File file = null;
+        Message message;
 
+        //convert a multipart file to File. Test 10
+        try {
+            if (csvContents == null) {
+                logger.error("CSV contents are null");
+                return new Message("Error: CSV contents are null");
+            }
 
-      //convert a multipart file to File. Test 10
-  
-      try {
-          String tmpDir = System.getProperty("java.io.tmpdir");
-          File dir = new File(tmpDir, UIX_DIR);
-          // empty check here.
-          if(!dir.exists()){
-              dir.mkdir();
-          }
-          // doing null check 
-          if(csvContents != null) {
-              file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId());
-              FileUtils.writeStringToFile(file, csvContents);
-          }
+            file = createTempFile(csvContents, userToken.getUserId());
+            if (file == null) {
+                logger.error("Failed to create temporary file");
+                return new Message("Error: Failed to create temporary file");
+            }
 
-          message = jiraService.raiseTSUP(file);
+            message = jiraService.raiseTSUP(file);
+        } catch (IOException e) {
+            logger.error("Error in file reading: ", e);
+            throw e;
+        }
 
-      } catch (IOException e) {
-          logger.error("Error in file reading: ",e);
-          throw e;
-      }
+        return message;
+    }
 
-
-      return message;
-
-
-      }
-
+    private File createTempFile(String csvContents, String userId) throws IOException {
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        Path dir = Paths.get(tmpDir, UIX_DIR);
+        // empty check here.
+        if (!Files.exists(dir)) {
+            Files.createDirectories(dir);
+        }
+        // doing null check 
+        if (csvContents != null) {
+            String fileName = FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userId;
+            File file = new File(dir.toFile(), fileName);
+            FileUtils.writeStringToFile(file, csvContents);
+            return file;
+        }
+        return null;
+    }
 
     public static FlartScoreRequest getFlartScoreRequest(String filePathOnDisk, String repoName,
-                                                       String txWorkingFile, String repoUid,
-                                                       Map<String, String> mappedNewMetrics) {
-    FlartScoreRequest flartScoreRequest = new FlartScoreRequest();
-    flartScoreRequest.setCurrentMetrics(mappedNewMetrics);
-    flartScoreRequest.setFileType(getWorkingFileType(filePathOnDisk));
-    flartScoreRequest.setEnterpriseId(Long.MAX_VALUE);
-    flartScoreRequest.setRepoName(repoName);
-    flartScoreRequest.setTxWorkingFile(txWorkingFile);
-    flartScoreRequest.setRepoUUID(repoUid);
-    return flartScoreRequest;
-  }
-
+                                                         String txWorkingFile, String repoUid,
+                                                         Map<String, String> mappedNewMetrics) {
+        FlartScoreRequest flartScoreRequest = new FlartScoreRequest();
+        flartScoreRequest.setCurrentMetrics(mappedNewMetrics);
+        flartScoreRequest.setFileType(getWorkingFileType(filePathOnDisk));
+        flartScoreRequest.setEnterpriseId(Long.MAX_VALUE);
+        flartScoreRequest.setRepoName(repoName);
+        flartScoreRequest.setTxWorkingFile(txWorkingFile);
+        flartScoreRequest.setRepoUUID(repoUid);
+        return flartScoreRequest;
+    }
 }
