@@ -1,6 +1,6 @@
 
 package com.blueoptima.connectors.scr;
-//just a comment 1245nfhffff
+//just a comment 1245nfhffffs
 import static com.blueoptima.connectors.ConnectorConstants.METRICS_ENABLED;
 import static com.blueoptima.connectors.scr.constants.BopScrDataMiscKey.DEFAULT_BRANCH;
 import static com.blueoptima.connectors.scr.constants.BopScrDataMiscKey.SD_FCE_FAILED_FILES;
@@ -118,7 +118,7 @@ public class SCR extends BOpInfraExtractor {
 	private static Logger logger = LogManager.getLogger(SCR.class);
 
 	public static String SCR_SCRIPTS_DIR;
-//commit lkjn
+//commit dsfvg345
 	private final BOpSCRExtractor extractor;
 	private final BOpMetricsGenerator metricGenerator;
 	private final RevisionRouter revisionRouter;
