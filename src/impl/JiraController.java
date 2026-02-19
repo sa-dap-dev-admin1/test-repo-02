@@ -46,7 +46,7 @@ public class JiraController {
       Message message;
 
 
-      //convert a multipart file to File. Test 10
+      //conment added here
   
       try {
           String tmpDir = System.getProperty("java.io.tmpdir");
@@ -55,7 +55,7 @@ public class JiraController {
           if(!dir.exists()){
               dir.mkdir();
           }
-          // doing null check 
+          // doing null check
           if(csvContents != null) {
               file = new File(dir, FileSeparator.CSV_SEPARATOR.getName() + "_" + System.currentTimeMillis() + "X" + userToken.getUserId());
               FileUtils.writeStringToFile(file, csvContents);
