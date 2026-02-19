@@ -2,15 +2,11 @@ package patterns.java;
 
 import java.util.Arrays;
 import java.util.Stack;
-//test 2345fhdffff
+
 public class MonotonicStack {
     private static final int NO_GREATER_ELEMENT = -1;
 
     public int[] nextGreaterElement(int[] nums) {
-        if (nums == null || nums.length == 0) {
-            return new int[0];
-        }
-
         int n = nums.length;
         int[] result = new int[n]; // Output array
         Arrays.fill(result, NO_GREATER_ELEMENT); // Default to -1 if no greater element exists
@@ -24,17 +20,13 @@ public class MonotonicStack {
     }
 
     public int[] dailyTemperatures(int[] temperatures) {
-        if (temperatures == null || temperatures.length == 0) {
-            return new int[0];
-        }
-
         int n = temperatures.length;
         int[] result = new int[n]; // Result array initialized with 0s
         Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
 
         // Iterate through the temperature array
         for (int i = 0; i < n; i++) {
-            updateStack(temperatures, result, stack, i, (index, currentIndex) -> currentIndex - index);
+            updateStack(temperatures, result, stack, i, (index, value) -> index - value);
         }
 
         return result; // Return the computed results
@@ -44,13 +36,13 @@ public class MonotonicStack {
         // While stack is not empty and current element is greater than stack top
         while (!stack.isEmpty() && values[currentIndex] > values[stack.peek()]) {
             int topIndex = stack.pop(); // Pop the top element
-            result[topIndex] = updater.update(topIndex, currentIndex); // Update the result
+            result[topIndex] = updater.update(currentIndex, topIndex); // Update the result
         }
         stack.push(currentIndex); // Push the current index onto the stack
     }
 
     @FunctionalInterface
     private interface ResultUpdater {
-        int update(int index, int currentIndex);
+        int update(int currentIndex, int topIndex);
     }
 }
