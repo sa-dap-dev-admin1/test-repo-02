@@ -2,72 +2,54 @@ package patterns.java;
 
 import java.util.Arrays;
 import java.util.Stack;
-import java.util.Optional;
-
+//test 2345fhdffff
 public class MonotonicStack {
     private static final int NO_GREATER_ELEMENT = -1;
-    private static final int DEFAULT_WAIT_TIME = 0;
 
-    /**
-     * Finds the next greater element for each element in the input array.
-     * @param nums The input array of integers.
-     * @return An array where each element is the next greater element in the original array.
-     */
-    public int[] nextGreaterElement(final int[] nums) {
-        if (nums == null || nums.length == 0) {
-            return new int[0];
-        }
+    public int[] nextGreaterElement(int[] nums) {
+        int[] result = initializeResult(nums.length, NO_GREATER_ELEMENT);
+        Stack<Integer> stack = new Stack<>(); // Stack stores indices
 
-        final int n = nums.length;
-        final int[] result = new int[n];
-        Arrays.fill(result, NO_GREATER_ELEMENT);
-        final Stack<Integer> stack = new Stack<>();
-
-        for (int i = 0; i < n; i++) {
-            updateStack(nums, result, stack, i, (index, value) -> value);
+        // Iterate through the array
+        for (int i = 0; i < nums.length; i++) {
+            findNextGreaterElement(nums, result, stack, i);
         }
         return result;
     }
 
-    /**
-     * Calculates the number of days to wait for a warmer temperature.
-     * @param temperatures The input array of daily temperatures.
-     * @return An array where each element is the number of days to wait for a warmer temperature.
-     */
-    public int[] dailyTemperatures(final int[] temperatures) {
-        if (temperatures == null || temperatures.length == 0) {
-            return new int[0];
+    public int[] dailyTemperatures(int[] temperatures) {
+        int[] result = initializeResult(temperatures.length, 0); // Result array initialized with 0s
+        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
+
+        // Iterate through the temperature array
+        for (int i = 0; i < temperatures.length; i++) {
+            calculateWaitTime(temperatures, result, stack, i);
         }
 
-        final int n = temperatures.length;
-        final int[] result = new int[n];
-        final Stack<Integer> stack = new Stack<>();
+        return result; // Return the computed results
+    }
 
-        for (int i = 0; i < n; i++) {
-            updateStack(temperatures, result, stack, i, (index, value) -> index);
-        }
+    private int[] initializeResult(int length, int defaultValue) {
+        int[] result = new int[length]; // Output array
+        Arrays.fill(result, defaultValue); // Default to specified value
         return result;
     }
 
-    /**
-     * Updates the stack and result array based on current values.
-     * @param values The input array of values.
-     * @param result The result array to be updated.
-     * @param stack The stack of indices.
-     * @param currentIndex The current index being processed.
-     * @param resultCalculator A function to calculate the result value.
-     */
-    private void updateStack(final int[] values, final int[] result, final Stack<Integer> stack, 
-                             final int currentIndex, final ResultCalculator resultCalculator) {
+    private void findNextGreaterElement(int[] nums, int[] result, Stack<Integer> stack, int currentIndex) {
+        // While stack is not empty and current element is greater than stack top
+        updateStack(nums, result, stack, currentIndex);
+    }
+
+    private void calculateWaitTime(int[] temperatures, int[] result, Stack<Integer> stack, int currentIndex) {
+        // While stack is not empty AND the current temperature is warmer than the temperature at stack top
+        updateStack(temperatures, result, stack, currentIndex);
+    }
+
+    private void updateStack(int[] values, int[] result, Stack<Integer> stack, int currentIndex) {
         while (!stack.isEmpty() && values[currentIndex] > values[stack.peek()]) {
-            final int topIndex = stack.pop();
-            result[topIndex] = resultCalculator.calculate(currentIndex, values[currentIndex]) - topIndex;
+            int topIndex = stack.pop(); // Pop the top element
+            result[topIndex] = currentIndex - topIndex; // Calculate the wait time or Next Greater Element
         }
-        stack.push(currentIndex);
-    }
-
-    @FunctionalInterface
-    private interface ResultCalculator {
-        int calculate(int index, int value);
+        stack.push(currentIndex); // Push the current index onto the stack
     }
 }
