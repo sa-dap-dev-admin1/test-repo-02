@@ -3,82 +3,62 @@ package patterns.java;
 import java.util.Arrays;
 import java.util.Stack;
 
-//test 2345fhdffff
 public class MonotonicStack {
     private static final int NO_GREATER_ELEMENT = -1;
 
-    /**
-     * Finds the next greater element for each element in the input array.
-     * 
-     * @param nums The input array of integers
-     * @return An array where each element is the next greater element for the corresponding input element
-     */
     public int[] nextGreaterElement(int[] nums) {
-        if (nums == null || nums.length == 0) {
-            return new int[0];
-        }
-        int[] result = new int[nums.length];
-        Arrays.fill(result, NO_GREATER_ELEMENT);
-        MonotonicDecreasingStack stack = new MonotonicDecreasingStack();
+        int n = nums.length;
+        int[] result = initializeResultArray(n, NO_GREATER_ELEMENT); // Output array
+        Stack<Integer> stack = new Stack<>(); // Stack stores indices
 
-        for (int i = 0; i < nums.length; i++) {
-            updateStackForNextGreater(nums, result, stack, i);
-        }
+        // Iterate through the array
+        processElements(nums, result, stack, this::updateNextGreaterElement);
+
         return result;
     }
 
-    /**
-     * Calculates the number of days to wait for a warmer temperature.
-     * 
-     * @param temperatures The input array of daily temperatures
-     * @return An array where each element is the number of days to wait for a warmer temperature
-     */
     public int[] dailyTemperatures(int[] temperatures) {
-        if (temperatures == null || temperatures.length == 0) {
-            return new int[0];
-        }
-        int[] result = new int[temperatures.length];
-        MonotonicDecreasingStack stack = new MonotonicDecreasingStack();
+        int n = temperatures.length;
+        int[] result = initializeResultArray(n, 0); // Result array initialized with 0s
+        Stack<Integer> stack = new Stack<>(); // Monotonic decreasing stack (stores indices)
 
-        for (int i = 0; i < temperatures.length; i++) {
-            updateStack(temperatures, result, stack, i);
-        }
+        // Iterate through the temperature array
+        processElements(temperatures, result, stack, this::updateDailyTemperatures);
+
+        return result; // Return the computed results
+    }
+
+    private int[] initializeResultArray(int n, int defaultValue) {
+        int[] result = new int[n];
+        Arrays.fill(result, defaultValue); // Default to -1 if no greater element exists
         return result;
     }
 
-    private void updateStack(int[] values, int[] result, MonotonicDecreasingStack stack, int currentIndex) {
-        while (!stack.isEmpty() && values[currentIndex] > values[stack.peek()]) {
-            int topIndex = stack.pop();
-            result[topIndex] = currentIndex - topIndex;
+    private void processElements(int[] values, int[] result, Stack<Integer> stack, StackUpdateOperation updateOperation) {
+        for (int i = 0; i < values.length; i++) {
+            updateOperation.update(values, result, stack, i);
         }
-        stack.push(currentIndex);
     }
 
-    private void updateStackForNextGreater(int[] values, int[] result, MonotonicDecreasingStack stack, int currentIndex) {
-        while (!stack.isEmpty() && values[currentIndex] > values[stack.peek()]) {
-            int topIndex = stack.pop();
-            result[topIndex] = values[currentIndex];
+    private void updateNextGreaterElement(int[] nums, int[] result, Stack<Integer> stack, int currentIndex) {
+        // While stack is not empty and current element is greater than stack top
+        while (!stack.isEmpty() && nums[currentIndex] > nums[stack.peek()]) {
+            int index = stack.pop(); // Pop the top element
+            result[index] = nums[currentIndex]; // The current element is the Next Greater Element
         }
-        stack.push(currentIndex);
+        stack.push(currentIndex); // Push the current index onto the stack
     }
 
-    private static class MonotonicDecreasingStack {
-        private final Stack<Integer> stack = new Stack<>();
-
-        public void push(int value) {
-            stack.push(value);
+    private void updateDailyTemperatures(int[] temperatures, int[] result, Stack<Integer> stack, int currentIndex) {
+        // While stack is not empty AND the current temperature is warmer than the temperature at stack top
+        while (!stack.isEmpty() && temperatures[currentIndex] > temperatures[stack.peek()]) {
+            int prevIndex = stack.pop(); // Pop the previous day's index
+            result[prevIndex] = currentIndex - prevIndex; // Calculate the wait time
         }
+        stack.push(currentIndex); // Push current index onto the stack
+    }
 
-        public int pop() {
-            return stack.pop();
-        }
-
-        public int peek() {
-            return stack.peek();
-        }
-
-        public boolean isEmpty() {
-            return stack.isEmpty();
-        }
+    private interface StackUpdateOperation {
+        void update(int[] values, int[] result, Stack<Integer> stack, int currentIndex);
     }
 }
