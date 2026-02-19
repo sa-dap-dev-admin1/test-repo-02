@@ -46,7 +46,7 @@ public class JiraController {
       Message message;
 
 
-      //conment added here
+      //conment added heree
   
       try {
           String tmpDir = System.getProperty("java.io.tmpdir");
