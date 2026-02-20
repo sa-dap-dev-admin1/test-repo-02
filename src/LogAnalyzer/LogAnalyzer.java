@@ -21,14 +21,14 @@ public class LogAnalyzer {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS 'GMT'");
 
     // --- KEYWORDS ---
-    private static final String MSG_START = "messagePasttern=Starting AutoFix data generation";
+    private static final String MSG_START = "messagePattern=Starting AutoFix data generation"; // Fixed typo here
     private static final String MSG_ERROR = "messagePattern=Error in getting Single file autofix generation";
     private static final String MSG_END_WITH_ERROR = "How-To-Fix payload created";
     private static final String MSG_END_SUCCESS = "messagePattern=Autofix process completed successfully";
 
     public static void main(String[] args) {
         String userHome = System.getProperty("user.home");
-        Path logPath = Paths.get(userHome, "Desktop", "integrator-server-logs");
+        Path logPath = Paths.get(userHome, "Desktop", "integrator-server-siva-2-logs");
 
         if (args.length > 0) logPath = Paths.get(args[0]);
 
@@ -289,14 +289,20 @@ public class LogAnalyzer {
             return;
         }
 
-        // 4. SORT DETAILED ROWS
+        // 4. SORT DETAILED ROWS (FIXED TIMSORT EXCEPTION HERE)
         validRequests.sort((r1, r2) -> {
             String e1 = (r1.errorReason == null) ? "ZZZZ_SUCCESS" : r1.errorReason;
             String e2 = (r2.errorReason == null) ? "ZZZZ_SUCCESS" : r2.errorReason;
             int errorCompare = e1.compareTo(e2);
             if (errorCompare != 0) return errorCompare;
+
+            // --- FIX FOR IllegalArgumentException ---
+            // Must strictly handle all null permutations to preserve the comparison contract
+            if (r1.startTime == null && r2.startTime == null) return 0;
             if (r1.startTime == null) return 1;
             if (r2.startTime == null) return -1;
+            // ----------------------------------------
+
             return r1.startTime.compareTo(r2.startTime);
         });
 
