@@ -2,15 +2,33 @@ import java.util.*;
 
 public class OrderProcessorBad {
     // global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>(); global mutable state (thread-unsafe, hidden coupling)
     static List<Map<String, Object>> orders = new ArrayList<>();
     static int mode = 0;
 
     public static void main(String[] args) {
         // magic numbers + unclear flags
         mode = args.length > 0 ? 1 : 0;
+    static int mode = 0;
+ global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
 
         add("A1", 2, 199.99, "IN");
-        add("B2", 1, 9.5, "US");
+        add("B2", 1, 9.5, "US"); global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
         add("C3", 5, 25.0, "IN");
         add("D4", 3, 25.0, "US");
 
@@ -53,7 +71,13 @@ public class OrderProcessorBad {
 
             double line = p * q;
 
-            // magic numbers + complicated branching
+            // magic numbers + complicated branching global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
             if (applyDiscount) {
                 if (q > 3) {
                     line = line - (line * 0.07);
@@ -62,7 +86,181 @@ public class OrderProcessorBad {
                         line = line - 15; // fixed discount
                     }
                 }
-            }
+            } global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) { global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
+        mode = args.length > 0 ? 1 : 0;
 
             if (applyTax) {
                 if ("IN".equals(c)) {
@@ -80,7 +278,19 @@ public class OrderProcessorBad {
                     suspiciousCount++;
                 } else if (id != null && id.startsWith("D")) {
                     suspiciousCount++;
-                }
+                } global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
+        mode = args.length > 0 ? 1 : 0;
             } else {
                 if (q == 0) suspiciousCount++; // nonsense rule
             }
@@ -100,14 +310,507 @@ public class OrderProcessorBad {
         try {
             if (grand > 9999999) {
                 throw new RuntimeException("Too big");
-            }
+            } global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
         } catch (Exception e) {
             // ignorehjffdj
         }
 
-        // duplicated computation (again)gf
+        // duplicated computation (again)gf global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
         double rawTotal = 0;
-        for (int i = 0; i < os.size(); i++) {
+        for (int i = 0; i < os.size(); i++) { global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0 global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orde global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+ global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0; glo global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;bal mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
+
+    public static void m global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;ain(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;le state (thread-unsafe, hidden coupling)
+    static List<Map<Str global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;ing, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[ global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<Str global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; Object>> orders = new ArrayList<>();
+    static int mode = 0;
+ global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;rs = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;s = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;rs = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;l mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
+
+    public static voi global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;d main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.l global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;ength global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; > 0 ?  global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;1 :  global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0; global mutable state (thread-unsafe, hidden coupling)
+    static List<Map<String, Object>> orders = new ArrayList<>();
+    static int mode = 0;
+
+    public static void main(String[] args) {
+        // magic numbers + unclear flags
+        mode = args.length > 0 ? 1 : 0;
             Map<String, Object> o = os.get(i);
             rawTotal += (double) o.get("price") * (int) o.get("qty");
         }
