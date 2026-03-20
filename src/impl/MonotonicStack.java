@@ -2,7 +2,7 @@ package patterns.java;
 
 import java.util.Arrays;
 import java.util.Stack;
-//test 2345fhdffffff
+//test 2345fhdfffffff
 public class MonotonicStack {
     private static final int NO_GREATER_ELEMENT = -1;
     private static final int DEFAULT_WAIT_TIME = 0;
