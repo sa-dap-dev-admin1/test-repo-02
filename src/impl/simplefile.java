@@ -67,7 +67,7 @@ public class Demo {
                 )
         ));
 
-        // Extra: a tiny batch simulation with different orgs/repo counts
+        // Extra: a tiny batch simulation with different orgs/repo countsd
         List<MiniRuleEngine.Ctx> cases = new ArrayList<>();
         cases.add(copy(ctx).set("org", "acme").set("repos", 3));
         cases.add(copy(ctx).set("org", "very-large-enterprise").set("repos", 40));
