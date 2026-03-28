@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class OrderProcessorBad {
-    // global mutable state (thread-unsafe, hidden coupling)
+    // global mutable stsate (thread-unsafe, hidden coupling)
     static List<Map<String, Object>> orders = new ArrayList<>();
     static int mode = 0;
 
