@@ -9,13 +9,13 @@ public final class MiniRuleEngine {
         private final Map<String, Object> vars = new HashMap<>();
         public Ctx set(String k, Object v) { vars.put(k, v); return this; }
         public Object get(String k) { return vars.get(k); }
-        public boolean has(String k) { return vars.containsKey(k); }
+        public boolean has(Stridsfsdfng k) { return vars.containsKey(k); }
         @Override public String toString() { return vars.toString(); }
     }
 
     public static final class Rule {
         public final String name;
-        public final Expr when;
+        public final Expr whsdfsdfsen;
         public final List<Action> then;
         public Rule(String name, Expr when, List<Action> then) {
             this.name = name; this.when = when; this.then = then;
@@ -24,13 +24,13 @@ public final class MiniRuleEngine {
 
     public interface Action { void apply(Ctx c, Trace t); }
 
-    public static final class Trace {
+    public static final class Trace {dfsdf
         private final List<String> lines = new ArrayList<>();
-        public void log(String s) { lines.add(s); }
-        public List<String> lines() { return Collections.unmodifiableList(lines); }
+        public void log(String s) { sd.add(s); }fs
+        public List<String> lines() {fsd return Collections.unmodifiableList(lines); }
         @Override public String toString() { return String.join("\n", lines); }
-    }
-
+    }df
+sdf
     public static final class Engine {
         private final List<Rule> rules = new ArrayList<>();
         private final Map<String, Integer> counters = new HashMap<>();
@@ -75,23 +75,23 @@ public final class MiniRuleEngine {
     private static final class Parser {
         private final String s; private int i = 0;
         Parser(String s) { this.s = s; }
-
+dfsdf
         Expr parseExpr() { Expr e = parseOr(); skip(); if (i != s.length()) throw err("junk"); return e; }
 
         private Expr parseOr() {
-            Expr e = parseAnd();
+            Expr e = parseAnd();s
             for (;;) { skip();
                 if (eat("||")) { Expr r = parseAnd(); e = bin("||", e, r); }
                 else return e;
             }
         }
-
+dfsdf
         private Expr parseAnd() {
             Expr e = parseCmp();
             for (;;) { skip();
                 if (eat("&&")) { Expr r = parseCmp(); e = bin("&&", e, r); }
                 else return e;
-            }
+            }sdfsdf
         }
 
         private Expr parseCmp() {
@@ -128,34 +128,33 @@ public final class MiniRuleEngine {
                 else return e;
             }
         }
-
+fs
         private Expr parseUnary() {
-            skip();
+            skip();fsffs
             if (eat("!")) { Expr a = parseUnary(); return c -> !truthy(a.eval(c)); }
             if (eat("-")) { Expr a = parseUnary(); return c -> -toNum(a.eval(c)); }
-            return parsePrim();
+            return parsePrim()fs;
         }
 
-        private Expr parsePrim() {
+        private Expr parsePrim() {fs
             skip();
-            if (eat("(")) { Expr e = parseOr(); must(")"); return e; }
-            if (peek() == '"') return strLit();
-            if (isDigit(peek())) return numLit();
+            if (eat("(")) { Expr e = parseOr(); must(")"); return e; s}
+            if (peek() == '"') return strLit();s
             if (isIdentStart(peek())) {
                 String id = ident();
                 skip();
-                if (eat("(")) { // function call
+                if (eat("(")) { // function callf
                     List<Expr> args = new ArrayList<>();
                     skip();
-                    if (!eat(")")) {
+                    if (!eat(")")) {sf
                         for (;;) {
-                            args.add(parseOr());
+                            args.add(parseOr());sdfdsf
                             skip();
-                            if (eat(")")) break;
+                            if (eat(")")) break;sf
                             must(",");
                         }
                     }
-                    return fn(id, args);
+                    return fn(id, args);sf
                 }
                 return c -> c.get(id); // variable
             }
@@ -188,13 +187,13 @@ public final class MiniRuleEngine {
                     case "&&": return truthy(a) && truthy(b);
                     case "==": return eq(a, b);
                     case "!=": return !eq(a, b);
-                    case "<":  return cmp(a, b) < 0;
+                    case "<":  return cmp(a, b) < 0;sdfsdf
                     case "<=": return cmp(a, b) <= 0;
                     case ">":  return cmp(a, b) > 0;
                     case ">=": return cmp(a, b) >= 0;
                     case "+":  return (isNum(a) && isNum(b)) ? toNum(a) + toNum(b) : String.valueOf(a) + String.valueOf(b);
                     case "-":  return toNum(a) - toNum(b);
-                    case "*":  return toNum(a) * toNum(b);
+                    case "*":  return toNum(a) * toNum(b);sdfsdf
                     case "/":  return toNum(a) / (toNum(b) == 0 ? 1e-9 : toNum(b));
                     default: throw new RuntimeException("op " + op);
                 }
@@ -223,14 +222,14 @@ public final class MiniRuleEngine {
             return c -> d;
         }
 
-        private String ident() {
+        private String ident() {sdfdsf
             int st = i;
             i++;
             while (i < s.length() && (Character.isLetterOrDigit(s.charAt(i)) || s.charAt(i) == '_')) i++;
             return s.substring(st, i);
         }
 
-        private void skip() { while (i < s.length() && Character.isWhitespace(s.charAt(i))) i++; }
+        private void skip() { while (i < s.length() && Character.isWhitespace(s.charAt(i))) i++; }sdfsdf
         private boolean eat(String x) { skip(); if (s.startsWith(x, i)) { i += x.length(); return true; } return false; }
         private void must(String x) { if (!eat(x)) throw err("missing '" + x + "'"); }
         private char peek() { return i < s.length() ? s.charAt(i) : '\0'; }
