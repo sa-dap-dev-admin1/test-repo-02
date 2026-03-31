@@ -13,5 +13,22 @@ public class KadaneAlgorithm {
             maxSum = Math.max(maxSum, currentSum);
         }
         return maxSum;
-    }    
+    }  
+
+    public static boolean isPrime(int num) {
+        // 0 and 1 are not prime numbers
+        if (num <= 1) {
+            return false;
+        }
+
+        // We only need to check up to the square root of the number.
+        // If a number is divisible by anything larger than its square root,
+        // it must also be divisible by something smaller.
+        for (int i = 2; i <= Math.sqrt(num); i++) {
+            if (num % i == 0) {
+                return false; // Found a divisor, so it's not prime
+            }
+        }
+        return true;
+    }
 }
