@@ -123,6 +123,7 @@ public class SCR extends BOpInfraExtractor {
 	private final BOpMetricsGenerator metricGenerator;
 	private final RevisionRouter revisionRouter;
 	private final SDFCService sdfcService;
+	//just a comment 1245nfhfffffe
 
 	private BOpSCRData scrData = new BOpSCRData();
 	private String publisherResponse;
