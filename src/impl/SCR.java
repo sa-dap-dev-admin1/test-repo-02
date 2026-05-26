@@ -124,6 +124,7 @@ public class SCR extends BOpInfraExtractor {
 	private final RevisionRouter revisionRouter;
 	private final SDFCService sdfcService;
 	//just a comment 1245nfhfffffe
+	// Testing shared clone - 01
 
 	private BOpSCRData scrData = new BOpSCRData();
 	private String publisherResponse;
