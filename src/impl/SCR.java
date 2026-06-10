@@ -123,7 +123,7 @@ public class SCR extends BOpInfraExtractor {
 	private final RevisionRouter revisionRouter;
 	private final SDFCService sdfcService;
 
-	// Testing Batching _03
+	// Testing Batching _04
 
 	private BOpSCRData scrData = new BOpSCRData();
 	private String publisherResponse;
