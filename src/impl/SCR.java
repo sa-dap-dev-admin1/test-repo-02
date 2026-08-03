@@ -1,4 +1,3 @@
-// 05
 package com.blueoptima.connectors.scr;
 
 import static com.blueoptima.connectors.ConnectorConstants.METRICS_ENABLED;
@@ -123,7 +122,7 @@ public class SCR extends BOpInfraExtractor {
 	private final RevisionRouter revisionRouter;
 	private final SDFCService sdfcService;
 
-	// Testing Batching _15
+	// Testing Publisher
 
 	private BOpSCRData scrData = new BOpSCRData();
 	private String publisherResponse;
