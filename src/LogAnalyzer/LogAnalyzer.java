@@ -47,6 +47,7 @@ public class LogAnalyzer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("LOG ANALYZER DONE");
     }
 
     private static void analyzeDirectory(Path startPath) throws IOException {
