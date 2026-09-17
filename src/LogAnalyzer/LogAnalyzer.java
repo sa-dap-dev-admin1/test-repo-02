@@ -65,6 +65,8 @@ public class LogAnalyzer {
         // 2. SORT FILES (Pivot Logic)
         Pattern datePattern = Pattern.compile("\\.(\\d{2})-(\\d+)");
 
+        System.out.println("LOG ANALYZER");
+
         Collections.sort(logFiles, new Comparator<Path>() {
             @Override
             public int compare(Path p1, Path p2) {
