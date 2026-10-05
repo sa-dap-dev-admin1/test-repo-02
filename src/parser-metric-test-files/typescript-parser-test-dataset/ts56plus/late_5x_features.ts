@@ -41,8 +41,8 @@ function config(debug: boolean): string {
   return level;
 }
 
-// if (/abc/) {}        // 5.6: error TS2872 - this kind of expression is always truthy
-// if (x => 0) {}       // 5.6: error - always truthy
+// if (/abc/) {}         // 5.6: error TS2872 - this kind of expression is always truthy
+// if (x => 0) {}        // 5.6: error - always truthy
 
 console.log(aliasedGreeting);
 console.log(`iterator helpers: ${firstSquaresOfOdds.join(",")} | Iterator.from: ${fromArray.join("")}`);
